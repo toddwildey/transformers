@@ -21,7 +21,7 @@ from ...utils import logging
 
 logger = logging.get_logger(__name__)
 
-GPT2_PRETRAINED_CONFIG_ARCHIVE_MAP = {
+GPT2_INFINITY_PRETRAINED_CONFIG_ARCHIVE_MAP = {
     "gpt2": "https://huggingface.co/gpt2/resolve/main/config.json",
     "gpt2-medium": "https://huggingface.co/gpt2-medium/resolve/main/config.json",
     "gpt2-large": "https://huggingface.co/gpt2-large/resolve/main/config.json",
@@ -30,7 +30,7 @@ GPT2_PRETRAINED_CONFIG_ARCHIVE_MAP = {
 }
 
 
-class GPT2Config(PretrainedConfig):
+class GPT2InfinityConfig(PretrainedConfig):
 
     model_type = "gpt2-medium"
     keys_to_ignore_at_inference = ["past_key_values"]

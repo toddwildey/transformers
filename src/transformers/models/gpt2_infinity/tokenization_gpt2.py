@@ -101,7 +101,7 @@ def get_pairs(word):
     return pairs
 
 
-class GPT2Tokenizer(PreTrainedTokenizer):
+class GPT2InfinityTokenizer(PreTrainedTokenizer):
     """
     Construct a GPT-2 tokenizer. Based on byte-level Byte-Pair-Encoding.
 
@@ -110,8 +110,8 @@ class GPT2Tokenizer(PreTrainedTokenizer):
 
     ::
 
-        >>> from transformers import GPT2Tokenizer
-        >>> tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+        >>> from transformers import GPT2InfinityTokenizer
+        >>> tokenizer = GPT2InfinityTokenizer.from_pretrained("gpt2")
         >>> tokenizer("Hello world")['input_ids']
         [15496, 995]
         >>> tokenizer(" Hello world")['input_ids']
@@ -145,7 +145,7 @@ class GPT2Tokenizer(PreTrainedTokenizer):
             The end of sequence token.
         add_prefix_space (:obj:`bool`, `optional`, defaults to :obj:`False`):
             Whether or not to add an initial space to the input. This allows to treat the leading word just as any
-            other word. (GPT2 tokenizer detect beginning of words by the preceding space).
+            other word. (GPT2Infinity tokenizer detect beginning of words by the preceding space).
     """
 
     vocab_files_names = VOCAB_FILES_NAMES

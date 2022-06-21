@@ -46,7 +46,7 @@ from ...modeling_utils import (
 )
 from ...utils import logging
 from ...utils.model_parallel_utils import assert_device_map, get_device_map
-from .configuration_gpt2 import GPT2Config
+from .configuration_gpt2 import GPT2InfinityConfig
 
 from .long_term_attention import LongTermAttention 
 
@@ -57,10 +57,10 @@ import numpy as np
 logger = logging.get_logger(__name__)
 
 _CHECKPOINT_FOR_DOC = "gpt2"
-_CONFIG_FOR_DOC = "GPT2Config"
-_TOKENIZER_FOR_DOC = "GPT2Tokenizer"
+_CONFIG_FOR_DOC = "GPT2InfinityConfig"
+_TOKENIZER_FOR_DOC = "GPT2InfinityTokenizer"
 
-GPT2_PRETRAINED_MODEL_ARCHIVE_LIST = [
+GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST = [
     "gpt2",
     "gpt2-medium",
     "gpt2-large",
@@ -70,7 +70,7 @@ GPT2_PRETRAINED_MODEL_ARCHIVE_LIST = [
 ]
 
 
-def load_tf_weights_in_gpt2(model, config, gpt2_checkpoint_path):
+def load_tf_weights_in_gpt2_infinity(model, config, gpt2_checkpoint_path):
     """Load tf checkpoints in a pytorch model"""
     try:
         import re
@@ -415,14 +415,14 @@ class Block(nn.Module):
         return outputs  # hidden_states, present, (attentions, cross_attentions)
 
 
-class GPT2PreTrainedModel(PreTrainedModel):
+class GPT2InfinityPreTrainedModel(PreTrainedModel):
     """
     An abstract class to handle weights initialization and a simple interface for downloading and loading pretrained
     models.
     """
 
-    config_class = GPT2Config
-    load_tf_weights = load_tf_weights_in_gpt2
+    config_class = GPT2InfinityConfig
+    load_tf_weights = load_tf_weights_in_gpt2_infinity
     base_model_prefix = "transformer"
     is_parallelizable = True
 
@@ -447,7 +447,7 @@ class GPT2PreTrainedModel(PreTrainedModel):
 
 
 @dataclass
-class GPT2DoubleHeadsModelOutput(ModelOutput):
+class GPT2InfinityDoubleHeadsModelOutput(ModelOutput):
     """
     Base class for outputs of models predicting if two sentences are consecutive or not.
 
@@ -488,7 +488,7 @@ class GPT2DoubleHeadsModelOutput(ModelOutput):
     attentions: Optional[Tuple[torch.FloatTensor]] = None
 
 
-GPT2_START_DOCSTRING = r"""
+GPT2_INFINITY_START_DOCSTRING = r"""
 
     This model inherits from :class:`~transformers.PreTrainedModel`. Check the superclass documentation for the generic
     methods the library implements for all its model (such as downloading or saving, resizing the input embeddings,
@@ -499,13 +499,13 @@ GPT2_START_DOCSTRING = r"""
     general usage and behavior.
 
     Parameters:
-        config (:class:`~transformers.GPT2Config`): Model configuration class with all the parameters of the model.
+        config (:class:`~transformers.GPT2InfinityConfig`): Model configuration class with all the parameters of the model.
             Initializing with a config file does not load the weights associated with the model, only the
             configuration. Check out the :meth:`~transformers.PreTrainedModel.from_pretrained` method to load the model
             weights.
 """
 
-GPT2_INPUTS_DOCSTRING = r"""
+GPT2_INFINITY_INPUTS_DOCSTRING = r"""
     Args:
         input_ids (:obj:`torch.LongTensor` of shape :obj:`(batch_size, input_ids_length)`):
             :obj:`input_ids_length` = ``sequence_length`` if :obj:`past_key_values` is ``None`` else
@@ -515,7 +515,7 @@ GPT2_INPUTS_DOCSTRING = r"""
             If :obj:`past_key_values` is used, only ``input_ids`` that do not have their past calculated should be
             passed as ``input_ids``.
 
-            Indices can be obtained using :class:`~transformers.GPT2Tokenizer`. See
+            Indices can be obtained using :class:`~transformers.GPT2InfinityTokenizer`. See
             :meth:`transformers.PreTrainedTokenizer.encode` and :meth:`transformers.PreTrainedTokenizer.__call__` for
             details.
 
@@ -591,7 +591,7 @@ PARALLELIZE_DOCSTRING = r"""
     Example::
 
             # Here is an example of a device map on a machine with 4 GPUs using gpt2-xl, which has a total of 48 attention modules:
-            model = GPT2LMHeadModel.from_pretrained('gpt2-xl')
+            model = GPT2InfinityLMHeadModel.from_pretrained('gpt2-xl')
             device_map = {0: [0, 1, 2, 3, 4, 5, 6, 7, 8],
 
                           1: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
@@ -605,7 +605,7 @@ DEPARALLELIZE_DOCSTRING = r"""
     Example::
 
         # On a 4 GPU machine with gpt2-large:
-        model = GPT2LMHeadModel.from_pretrained('gpt2-large')
+        model = GPT2InfinityLMHeadModel.from_pretrained('gpt2-large')
         device_map = {0: [0, 1, 2, 3, 4, 5, 6, 7],
 
                     1: [8, 9, 10, 11, 12, 13, 14, 15],
@@ -617,10 +617,10 @@ DEPARALLELIZE_DOCSTRING = r"""
 
 
 @add_start_docstrings(
-    "The bare GPT2 Model transformer outputting raw hidden-states without any specific head on top.",
-    GPT2_START_DOCSTRING,
+    "The bare GPT2Infinity Model transformer outputting raw hidden-states without any specific head on top.",
+    GPT2_INFINITY_START_DOCSTRING,
 )
-class GPT2Model(GPT2PreTrainedModel):
+class GPT2InfinityModel(GPT2InfinityPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
 
@@ -688,7 +688,7 @@ class GPT2Model(GPT2PreTrainedModel):
         for layer, heads in heads_to_prune.items():
             self.h[layer].attn.prune_heads(heads)
 
-    @add_start_docstrings_to_model_forward(GPT2_INPUTS_DOCSTRING)
+    @add_start_docstrings_to_model_forward(GPT2_INFINITY_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
         tokenizer_class=_TOKENIZER_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_DOC,
@@ -918,17 +918,17 @@ class GPT2Model(GPT2PreTrainedModel):
 
 @add_start_docstrings(
     """
-    The GPT2 Model transformer with a language modeling head on top (linear layer with weights tied to the input
+    The GPT2Infinity Model transformer with a language modeling head on top (linear layer with weights tied to the input
     embeddings).
     """,
-    GPT2_START_DOCSTRING,
+    GPT2_INFINITY_START_DOCSTRING,
 )
-class GPT2LMHeadModel(GPT2PreTrainedModel):
+class GPT2InfinityLMHeadModel(GPT2InfinityPreTrainedModel):
     _keys_to_ignore_on_load_missing = [r"h\.\d+\.attn\.masked_bias", r"lm_head\.weight"]
 
     def __init__(self, config):
         super().__init__(config)
-        self.transformer = GPT2Model(config)
+        self.transformer = GPT2InfinityModel(config)
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
 
         self.init_weights()
@@ -996,7 +996,7 @@ class GPT2LMHeadModel(GPT2PreTrainedModel):
             "token_type_ids": token_type_ids,
         }
 
-    @add_start_docstrings_to_model_forward(GPT2_INPUTS_DOCSTRING)
+    @add_start_docstrings_to_model_forward(GPT2_INFINITY_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
         tokenizer_class=_TOKENIZER_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_DOC,
@@ -1118,18 +1118,18 @@ class GPT2LMHeadModel(GPT2PreTrainedModel):
 
 @add_start_docstrings(
     """
-The GPT2 Model transformer with a language modeling and a multiple-choice classification head on top e.g. for
+The GPT2Infinity Model transformer with a language modeling and a multiple-choice classification head on top e.g. for
 RocStories/SWAG tasks. The two heads are two linear layers. The language modeling head has its weights tied to the
 input embeddings, the classification head takes as input the input of a specified classification token index in the
 input sequence).
 """,
-    GPT2_START_DOCSTRING,
+    GPT2_INFINITY_START_DOCSTRING,
 )
-class GPT2DoubleHeadsModel(GPT2PreTrainedModel):
+class GPT2InfinityDoubleHeadsModel(GPT2InfinityPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
         config.num_labels = 1
-        self.transformer = GPT2Model(config)
+        self.transformer = GPT2InfinityModel(config)
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
         self.multiple_choice_head = SequenceSummary(config)
 
@@ -1196,8 +1196,8 @@ class GPT2DoubleHeadsModel(GPT2PreTrainedModel):
             "token_type_ids": token_type_ids,
         }
 
-    @add_start_docstrings_to_model_forward(GPT2_INPUTS_DOCSTRING)
-    @replace_return_docstrings(output_type=GPT2DoubleHeadsModelOutput, config_class=_CONFIG_FOR_DOC)
+    @add_start_docstrings_to_model_forward(GPT2_INFINITY_INPUTS_DOCSTRING)
+    @replace_return_docstrings(output_type=GPT2InfinityDoubleHeadsModelOutput, config_class=_CONFIG_FOR_DOC)
     def forward(
         self,
         input_ids=None,
@@ -1234,10 +1234,10 @@ class GPT2DoubleHeadsModel(GPT2PreTrainedModel):
         Example::
 
             >>> import torch
-            >>> from transformers import GPT2Tokenizer, GPT2DoubleHeadsModel
+            >>> from transformers import GPT2InfinityTokenizer, GPT2InfinityDoubleHeadsModel
 
-            >>> tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
-            >>> model = GPT2DoubleHeadsModel.from_pretrained('gpt2')
+            >>> tokenizer = GPT2InfinityTokenizer.from_pretrained('gpt2')
+            >>> model = GPT2InfinityDoubleHeadsModel.from_pretrained('gpt2')
 
             >>> # Add a [CLS] to the vocabulary (we should train it also!)
             >>> num_added_tokens = tokenizer.add_special_tokens({'cls_token': '[CLS]'})
@@ -1299,7 +1299,7 @@ class GPT2DoubleHeadsModel(GPT2PreTrainedModel):
                 output = (mc_loss,) + output
             return ((lm_loss,) + output) if lm_loss is not None else output
 
-        return GPT2DoubleHeadsModelOutput(
+        return GPT2InfinityDoubleHeadsModelOutput(
             loss=lm_loss,
             mc_loss=mc_loss,
             logits=lm_logits,
@@ -1324,9 +1324,9 @@ class GPT2DoubleHeadsModel(GPT2PreTrainedModel):
 
 @add_start_docstrings(
     """
-    The GPT2 Model transformer with a sequence classification head on top (linear layer).
+    The GPT2Infinity Model transformer with a sequence classification head on top (linear layer).
 
-    :class:`~transformers.GPT2ForSequenceClassification` uses the last token in order to do the classification, as
+    :class:`~transformers.GPT2InfinityForSequenceClassification` uses the last token in order to do the classification, as
     other causal models (e.g. GPT-1) do.
 
     Since it does classification on the last token, it requires to know the position of the last token. If a
@@ -1335,15 +1335,15 @@ class GPT2DoubleHeadsModel(GPT2PreTrainedModel):
     guess the padding tokens when :obj:`inputs_embeds` are passed instead of :obj:`input_ids`, it does the same (take
     the last value in each row of the batch).
     """,
-    GPT2_START_DOCSTRING,
+    GPT2_INFINITY_START_DOCSTRING,
 )
-class GPT2ForSequenceClassification(GPT2PreTrainedModel):
+class GPT2InfinityForSequenceClassification(GPT2InfinityPreTrainedModel):
     _keys_to_ignore_on_load_missing = [r"h\.\d+\.attn\.masked_bias", r"lm_head\.weight"]
 
     def __init__(self, config):
         super().__init__(config)
         self.num_labels = config.num_labels
-        self.transformer = GPT2Model(config)
+        self.transformer = GPT2InfinityModel(config)
         self.score = nn.Linear(config.n_embd, self.num_labels, bias=False)
 
         self.init_weights()
@@ -1352,7 +1352,7 @@ class GPT2ForSequenceClassification(GPT2PreTrainedModel):
         self.model_parallel = False
         self.device_map = None
 
-    @add_start_docstrings_to_model_forward(GPT2_INPUTS_DOCSTRING)
+    @add_start_docstrings_to_model_forward(GPT2_INFINITY_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
         tokenizer_class=_TOKENIZER_FOR_DOC,
         checkpoint="microsoft/dialogrpt",

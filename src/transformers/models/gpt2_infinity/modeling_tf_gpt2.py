@@ -46,16 +46,16 @@ from ...modeling_tf_utils import (
     shape_list,
 )
 from ...utils import logging
-from .configuration_gpt2 import GPT2Config
+from .configuration_gpt2 import GPT2InfinityConfig
 
 
 logger = logging.get_logger(__name__)
 
 _CHECKPOINT_FOR_DOC = "gpt2"
-_CONFIG_FOR_DOC = "GPT2Config"
-_TOKENIZER_FOR_DOC = "GPT2Tokenizer"
+_CONFIG_FOR_DOC = "GPT2InfinityConfig"
+_TOKENIZER_FOR_DOC = "GPT2InfinityTokenizer"
 
-TF_GPT2_PRETRAINED_MODEL_ARCHIVE_LIST = [
+TF_GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST = [
     "gpt2",
     "gpt2-medium",
     "gpt2-large",
@@ -211,8 +211,8 @@ class TFBlock(tf.keras.layers.Layer):
 
 
 @keras_serializable
-class TFGPT2MainLayer(tf.keras.layers.Layer):
-    config_class = GPT2Config
+class TFGPT2InfinityMainLayer(tf.keras.layers.Layer):
+    config_class = GPT2InfinityConfig
 
     def __init__(self, config, *inputs, **kwargs):
         super().__init__(*inputs, **kwargs)
@@ -414,13 +414,13 @@ class TFGPT2MainLayer(tf.keras.layers.Layer):
         )
 
 
-class TFGPT2PreTrainedModel(TFPreTrainedModel):
+class TFGPT2InfinityPreTrainedModel(TFPreTrainedModel):
     """
     An abstract class to handle weights initialization and a simple interface for downloading and loading pretrained
     models.
     """
 
-    config_class = GPT2Config
+    config_class = GPT2InfinityConfig
     base_model_prefix = "transformer"
     # names with a '.' represents the authorized unexpected/missing layers when a TF model is loaded from a PT model
     _keys_to_ignore_on_load_unexpected = [r"h.\d+.attn.bias"]
@@ -440,7 +440,7 @@ class TFGPT2PreTrainedModel(TFPreTrainedModel):
 
 
 @dataclass
-class TFGPT2DoubleHeadsModelOutput(ModelOutput):
+class TFGPT2InfinityDoubleHeadsModelOutput(ModelOutput):
     """
     Base class for outputs of models predicting if two sentences are consecutive or not.
 
@@ -475,7 +475,7 @@ class TFGPT2DoubleHeadsModelOutput(ModelOutput):
     attentions: Optional[Tuple[tf.Tensor]] = None
 
 
-GPT2_START_DOCSTRING = r"""
+GPT2_INFINITY_START_DOCSTRING = r"""
 
     This model inherits from :class:`~transformers.TFPreTrainedModel`. Check the superclass documentation for the
     generic methods the library implements for all its model (such as downloading or saving, resizing the input
@@ -505,13 +505,13 @@ GPT2_START_DOCSTRING = r"""
           :obj:`model({"input_ids": input_ids, "token_type_ids": token_type_ids})`
 
     Parameters:
-        config (:class:`~transformers.GPT2Config`): Model configuration class with all the parameters of the model.
+        config (:class:`~transformers.GPT2InfinityConfig`): Model configuration class with all the parameters of the model.
             Initializing with a config file does not load the weights associated with the model, only the
             configuration. Check out the :meth:`~transformers.PreTrainedModel.from_pretrained` method to load the model
             weights.
 """
 
-GPT2_INPUTS_DOCSTRING = r"""
+GPT2_INFINITY_INPUTS_DOCSTRING = r"""
     Args:
         input_ids (:obj:`Numpy array` or :obj:`tf.Tensor` of shape :obj:`(batch_size, input_ids_length)`):
             :obj:`input_ids_length` = ``sequence_length`` if ``past`` is ``None`` else ``past[0].shape[-2]``
@@ -520,7 +520,7 @@ GPT2_INPUTS_DOCSTRING = r"""
             If :obj:`past` is used, only input IDs that do not have their past calculated should be passed as
             ``input_ids``.
 
-            Indices can be obtained using :class:`~transformers.GPT2Tokenizer`. See
+            Indices can be obtained using :class:`~transformers.GPT2InfinityTokenizer`. See
             :func:`transformers.PreTrainedTokenizer.__call__` and :func:`transformers.PreTrainedTokenizer.encode` for
             details.
 
@@ -577,15 +577,15 @@ GPT2_INPUTS_DOCSTRING = r"""
 
 
 @add_start_docstrings(
-    "The bare GPT2 Model transformer outputting raw hidden-states without any specific head on top.",
-    GPT2_START_DOCSTRING,
+    "The bare GPT2Infinity Model transformer outputting raw hidden-states without any specific head on top.",
+    GPT2_INFINITY_START_DOCSTRING,
 )
-class TFGPT2Model(TFGPT2PreTrainedModel):
+class TFGPT2InfinityModel(TFGPT2InfinityPreTrainedModel):
     def __init__(self, config, *inputs, **kwargs):
         super().__init__(config, *inputs, **kwargs)
-        self.transformer = TFGPT2MainLayer(config, name="transformer")
+        self.transformer = TFGPT2InfinityMainLayer(config, name="transformer")
 
-    @add_start_docstrings_to_model_forward(GPT2_INPUTS_DOCSTRING)
+    @add_start_docstrings_to_model_forward(GPT2_INFINITY_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
         tokenizer_class=_TOKENIZER_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_DOC,
@@ -654,15 +654,15 @@ class TFGPT2Model(TFGPT2PreTrainedModel):
 
 @add_start_docstrings(
     """
-    The GPT2 Model transformer with a language modeling head on top (linear layer with weights tied to the input
+    The GPT2Infinity Model transformer with a language modeling head on top (linear layer with weights tied to the input
     embeddings).
     """,
-    GPT2_START_DOCSTRING,
+    GPT2_INFINITY_START_DOCSTRING,
 )
-class TFGPT2LMHeadModel(TFGPT2PreTrainedModel, TFCausalLanguageModelingLoss):
+class TFGPT2InfinityLMHeadModel(TFGPT2InfinityPreTrainedModel, TFCausalLanguageModelingLoss):
     def __init__(self, config, *inputs, **kwargs):
         super().__init__(config, *inputs, **kwargs)
-        self.transformer = TFGPT2MainLayer(config, name="transformer")
+        self.transformer = TFGPT2InfinityMainLayer(config, name="transformer")
 
     def get_output_embeddings(self):
         return self.get_input_embeddings()
@@ -677,7 +677,7 @@ class TFGPT2LMHeadModel(TFGPT2PreTrainedModel, TFCausalLanguageModelingLoss):
 
         return {"input_ids": inputs, "past": past, "use_cache": kwargs["use_cache"]}
 
-    @add_start_docstrings_to_model_forward(GPT2_INPUTS_DOCSTRING)
+    @add_start_docstrings_to_model_forward(GPT2_INFINITY_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
         tokenizer_class=_TOKENIZER_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_DOC,
@@ -770,24 +770,24 @@ class TFGPT2LMHeadModel(TFGPT2PreTrainedModel, TFCausalLanguageModelingLoss):
 
 @add_start_docstrings(
     """
-    The GPT2 Model transformer with a language modeling and a multiple-choice classification head on top e.g. for
+    The GPT2Infinity Model transformer with a language modeling and a multiple-choice classification head on top e.g. for
     RocStories/SWAG tasks. The two heads are two linear layers. The language modeling head has its weights tied to the
     input embeddings, the classification head takes as input the input of a specified classification token index in the
     input sequence).
     """,
-    GPT2_START_DOCSTRING,
+    GPT2_INFINITY_START_DOCSTRING,
 )
-class TFGPT2DoubleHeadsModel(TFGPT2PreTrainedModel):
+class TFGPT2InfinityDoubleHeadsModel(TFGPT2InfinityPreTrainedModel):
     def __init__(self, config, *inputs, **kwargs):
         super().__init__(config, *inputs, **kwargs)
         config.num_labels = 1
-        self.transformer = TFGPT2MainLayer(config, name="transformer")
+        self.transformer = TFGPT2InfinityMainLayer(config, name="transformer")
         self.multiple_choice_head = TFSequenceSummary(
             config, initializer_range=config.initializer_range, name="multiple_choice_head"
         )
 
-    @add_start_docstrings_to_model_forward(GPT2_INPUTS_DOCSTRING)
-    @replace_return_docstrings(output_type=TFGPT2DoubleHeadsModelOutput, config_class=_CONFIG_FOR_DOC)
+    @add_start_docstrings_to_model_forward(GPT2_INFINITY_INPUTS_DOCSTRING)
+    @replace_return_docstrings(output_type=TFGPT2InfinityDoubleHeadsModelOutput, config_class=_CONFIG_FOR_DOC)
     def call(
         self,
         input_ids=None,
@@ -815,10 +815,10 @@ class TFGPT2DoubleHeadsModel(TFGPT2PreTrainedModel):
         Examples::
 
             >>> import tensorflow as tf
-            >>> from transformers import GPT2Tokenizer, TFGPT2DoubleHeadsModel
+            >>> from transformers import GPT2InfinityTokenizer, TFGPT2InfinityDoubleHeadsModel
 
-            >>> tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
-            >>> model = TFGPT2DoubleHeadsModel.from_pretrained('gpt2')
+            >>> tokenizer = GPT2InfinityTokenizer.from_pretrained('gpt2')
+            >>> model = TFGPT2InfinityDoubleHeadsModel.from_pretrained('gpt2')
 
             >>> # Add a [CLS] to the vocabulary (we should train it also!)
             >>> num_added_tokens = tokenizer.add_special_tokens({'cls_token': '[CLS]'})
@@ -894,7 +894,7 @@ class TFGPT2DoubleHeadsModel(TFGPT2PreTrainedModel):
         if not inputs["return_dict"]:
             return (lm_logits, mc_logits) + transformer_outputs[1:]
 
-        return TFGPT2DoubleHeadsModelOutput(
+        return TFGPT2InfinityDoubleHeadsModelOutput(
             logits=lm_logits,
             mc_logits=mc_logits,
             past_key_values=transformer_outputs.past_key_values,
@@ -921,7 +921,7 @@ class TFGPT2DoubleHeadsModel(TFGPT2PreTrainedModel):
         hs = tf.convert_to_tensor(output.hidden_states) if self.config.output_hidden_states else None
         attns = tf.convert_to_tensor(output.attentions) if self.config.output_attentions else None
 
-        return TFGPT2DoubleHeadsModelOutput(
+        return TFGPT2InfinityDoubleHeadsModelOutput(
             logits=output.logits,
             mc_logits=output.mc_logits,
             past_key_values=pkv,
@@ -932,9 +932,9 @@ class TFGPT2DoubleHeadsModel(TFGPT2PreTrainedModel):
 
 @add_start_docstrings(
     """
-    The GPT2 Model transformer with a sequence classification head on top (linear layer).
+    The GPT2Infinity Model transformer with a sequence classification head on top (linear layer).
 
-    :class:`~transformers.TFGPT2ForSequenceClassification` uses the last token in order to do the classification, as
+    :class:`~transformers.TFGPT2InfinityForSequenceClassification` uses the last token in order to do the classification, as
     other causal models (e.g. GPT-1) do.
 
     Since it does classification on the last token, it requires to know the position of the last token. If a
@@ -943,9 +943,9 @@ class TFGPT2DoubleHeadsModel(TFGPT2PreTrainedModel):
     guess the padding tokens when :obj:`inputs_embeds` are passed instead of :obj:`input_ids`, it does the same (take
     the last value in each row of the batch).
     """,
-    GPT2_START_DOCSTRING,
+    GPT2_INFINITY_START_DOCSTRING,
 )
-class TFGPT2ForSequenceClassification(TFGPT2PreTrainedModel, TFSequenceClassificationLoss):
+class TFGPT2InfinityForSequenceClassification(TFGPT2InfinityPreTrainedModel, TFSequenceClassificationLoss):
     def __init__(self, config, *inputs, **kwargs):
         super().__init__(config, *inputs, **kwargs)
         self.num_labels = config.num_labels
@@ -955,9 +955,9 @@ class TFGPT2ForSequenceClassification(TFGPT2PreTrainedModel, TFSequenceClassific
             name="score",
             use_bias=False,
         )
-        self.transformer = TFGPT2MainLayer(config, name="transformer")
+        self.transformer = TFGPT2InfinityMainLayer(config, name="transformer")
 
-    @add_start_docstrings_to_model_forward(GPT2_INPUTS_DOCSTRING)
+    @add_start_docstrings_to_model_forward(GPT2_INFINITY_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
         tokenizer_class=_TOKENIZER_FOR_DOC,
         checkpoint="microsoft/DialogRPT-updown",

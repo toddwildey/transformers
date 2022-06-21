@@ -29,8 +29,8 @@ from ...utils import (
 
 
 _import_structure = {
-    "configuration_gpt2": ["GPT2_PRETRAINED_CONFIG_ARCHIVE_MAP", "GPT2Config", "GPT2OnnxConfig"],
-    "tokenization_gpt2": ["GPT2Tokenizer"],
+    "configuration_gpt2": ["GPT2_INFINITY_PRETRAINED_CONFIG_ARCHIVE_MAP", "GPT2InfinityConfig", "GPT2InfinityOnnxConfig"],
+    "tokenization_gpt2": ["GPT2InfinityTokenizer"],
 }
 
 try:
@@ -39,7 +39,7 @@ try:
 except OptionalDependencyNotAvailable:
     pass
 else:
-    _import_structure["tokenization_gpt2_fast"] = ["GPT2TokenizerFast"]
+    _import_structure["tokenization_gpt2_fast"] = ["GPT2InfinityTokenizerFast"]
 
 try:
     if not is_torch_available():
@@ -48,14 +48,14 @@ except OptionalDependencyNotAvailable:
     pass
 else:
     _import_structure["modeling_gpt2"] = [
-        "GPT2_PRETRAINED_MODEL_ARCHIVE_LIST",
-        "GPT2DoubleHeadsModel",
-        "GPT2ForSequenceClassification",
-        "GPT2ForTokenClassification",
-        "GPT2LMHeadModel",
-        "GPT2Model",
-        "GPT2PreTrainedModel",
-        "load_tf_weights_in_gpt2",
+        "GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST",
+        "GPT2InfinityDoubleHeadsModel",
+        "GPT2InfinityForSequenceClassification",
+        "GPT2InfinityForTokenClassification",
+        "GPT2InfinityLMHeadModel",
+        "GPT2InfinityModel",
+        "GPT2InfinityPreTrainedModel",
+        "load_tf_weights_in_gpt2_infinity",
     ]
 
 try:
@@ -65,13 +65,13 @@ except OptionalDependencyNotAvailable:
     pass
 else:
     _import_structure["modeling_tf_gpt2"] = [
-        "TF_GPT2_PRETRAINED_MODEL_ARCHIVE_LIST",
-        "TFGPT2DoubleHeadsModel",
-        "TFGPT2ForSequenceClassification",
-        "TFGPT2LMHeadModel",
-        "TFGPT2MainLayer",
-        "TFGPT2Model",
-        "TFGPT2PreTrainedModel",
+        "TF_GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST",
+        "TFGPT2InfinityDoubleHeadsModel",
+        "TFGPT2InfinityForSequenceClassification",
+        "TFGPT2InfinityLMHeadModel",
+        "TFGPT2InfinityMainLayer",
+        "TFGPT2InfinityModel",
+        "TFGPT2InfinityPreTrainedModel",
     ]
 
 try:
@@ -80,11 +80,11 @@ try:
 except OptionalDependencyNotAvailable:
     pass
 else:
-    _import_structure["modeling_flax_gpt2"] = ["FlaxGPT2LMHeadModel", "FlaxGPT2Model", "FlaxGPT2PreTrainedModel"]
+    _import_structure["modeling_flax_gpt2"] = ["FlaxGPT2InfinityLMHeadModel", "FlaxGPT2InfinityModel", "FlaxGPT2InfinityPreTrainedModel"]
 
 if TYPE_CHECKING:
-    from .configuration_gpt2 import GPT2_PRETRAINED_CONFIG_ARCHIVE_MAP, GPT2Config, GPT2OnnxConfig
-    from .tokenization_gpt2 import GPT2Tokenizer
+    from .configuration_gpt2 import GPT2_INFINITY_PRETRAINED_CONFIG_ARCHIVE_MAP, GPT2InfinityConfig, GPT2InfinityOnnxConfig
+    from .tokenization_gpt2 import GPT2InfinityTokenizer
 
     try:
         if not is_tokenizers_available():
@@ -92,7 +92,7 @@ if TYPE_CHECKING:
     except OptionalDependencyNotAvailable:
         pass
     else:
-        from .tokenization_gpt2_fast import GPT2TokenizerFast
+        from .tokenization_gpt2_fast import GPT2InfinityTokenizerFast
 
     try:
         if not is_torch_available():
@@ -101,14 +101,14 @@ if TYPE_CHECKING:
         pass
     else:
         from .modeling_gpt2 import (
-            GPT2_PRETRAINED_MODEL_ARCHIVE_LIST,
-            GPT2DoubleHeadsModel,
-            GPT2ForSequenceClassification,
-            GPT2ForTokenClassification,
-            GPT2LMHeadModel,
-            GPT2Model,
-            GPT2PreTrainedModel,
-            load_tf_weights_in_gpt2,
+            GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST,
+            GPT2InfinityDoubleHeadsModel,
+            GPT2InfinityForSequenceClassification,
+            GPT2InfinityForTokenClassification,
+            GPT2InfinityLMHeadModel,
+            GPT2InfinityModel,
+            GPT2InfinityPreTrainedModel,
+            load_tf_weights_in_gpt2_infinity,
         )
 
     try:
@@ -118,13 +118,13 @@ if TYPE_CHECKING:
         pass
     else:
         from .modeling_tf_gpt2 import (
-            TF_GPT2_PRETRAINED_MODEL_ARCHIVE_LIST,
-            TFGPT2DoubleHeadsModel,
-            TFGPT2ForSequenceClassification,
-            TFGPT2LMHeadModel,
-            TFGPT2MainLayer,
-            TFGPT2Model,
-            TFGPT2PreTrainedModel,
+            TF_GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST,
+            TFGPT2InfinityDoubleHeadsModel,
+            TFGPT2InfinityForSequenceClassification,
+            TFGPT2InfinityLMHeadModel,
+            TFGPT2InfinityMainLayer,
+            TFGPT2InfinityModel,
+            TFGPT2InfinityPreTrainedModel,
         )
 
     try:
@@ -133,7 +133,7 @@ if TYPE_CHECKING:
     except OptionalDependencyNotAvailable:
         pass
     else:
-        from .modeling_flax_gpt2 import FlaxGPT2LMHeadModel, FlaxGPT2Model, FlaxGPT2PreTrainedModel
+        from .modeling_flax_gpt2 import FlaxGPT2InfinityLMHeadModel, FlaxGPT2InfinityModel, FlaxGPT2InfinityPreTrainedModel
 
 else:
     import sys

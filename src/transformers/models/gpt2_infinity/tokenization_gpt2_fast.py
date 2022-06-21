@@ -23,7 +23,7 @@ from tokenizers import pre_tokenizers
 from ...tokenization_utils_base import BatchEncoding
 from ...tokenization_utils_fast import PreTrainedTokenizerFast
 from ...utils import logging
-from .tokenization_gpt2 import GPT2Tokenizer
+from .tokenization_gpt2 import GPT2InfinityTokenizer
 
 
 if TYPE_CHECKING:
@@ -67,7 +67,7 @@ PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES = {
 }
 
 
-class GPT2TokenizerFast(PreTrainedTokenizerFast):
+class GPT2InfinityTokenizerFast(PreTrainedTokenizerFast):
     """
     Construct a "fast" GPT-2 tokenizer (backed by HuggingFace's `tokenizers` library). Based on byte-level
     Byte-Pair-Encoding.
@@ -77,8 +77,8 @@ class GPT2TokenizerFast(PreTrainedTokenizerFast):
 
     ::
 
-        >>> from transformers import GPT2TokenizerFast
-        >>> tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
+        >>> from transformers import GPT2InfinityTokenizerFast
+        >>> tokenizer = GPT2InfinityTokenizerFast.from_pretrained("gpt2")
         >>> tokenizer("Hello world")['input_ids']
         [15496, 995]
         >>> tokenizer(" Hello world")['input_ids']
@@ -112,7 +112,7 @@ class GPT2TokenizerFast(PreTrainedTokenizerFast):
             The end of sequence token.
         add_prefix_space (:obj:`bool`, `optional`, defaults to :obj:`False`):
             Whether or not to add an initial space to the input. This allows to treat the leading word just as any
-            other word. (GPT2 tokenizer detect beginning of words by the preceding space).
+            other word. (GPT2Infinity tokenizer detect beginning of words by the preceding space).
         trim_offsets (:obj:`bool`, `optional`, defaults to :obj:`True`):
             Whether or not the post-processing step should trim offsets to avoid including whitespaces.
     """
@@ -121,7 +121,7 @@ class GPT2TokenizerFast(PreTrainedTokenizerFast):
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
     max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
     model_input_names = ["input_ids", "attention_mask"]
-    slow_tokenizer_class = GPT2Tokenizer
+    slow_tokenizer_class = GPT2InfinityTokenizer
 
     def __init__(
         self,

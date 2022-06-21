@@ -19,7 +19,7 @@ import argparse
 
 import torch
 
-from transformers import GPT2Config, GPT2Model, load_tf_weights_in_gpt2
+from transformers import GPT2InfinityConfig, GPT2InfinityModel, load_tf_weights_in_gpt2_infinity
 from transformers.file_utils import CONFIG_NAME, WEIGHTS_NAME
 from transformers.utils import logging
 
@@ -30,13 +30,13 @@ logging.set_verbosity_info()
 def convert_gpt2_checkpoint_to_pytorch(gpt2_checkpoint_path, gpt2_config_file, pytorch_dump_folder_path):
     # Construct model
     if gpt2_config_file == "":
-        config = GPT2Config()
+        config = GPT2InfinityConfig()
     else:
-        config = GPT2Config.from_json_file(gpt2_config_file)
-    model = GPT2Model(config)
+        config = GPT2InfinityConfig.from_json_file(gpt2_config_file)
+    model = GPT2InfinityModel(config)
 
     # Load weights from numpy
-    load_tf_weights_in_gpt2(model, config, gpt2_checkpoint_path)
+    load_tf_weights_in_gpt2_infinity(model, config, gpt2_checkpoint_path)
 
     # Save pytorch-model
     pytorch_weights_dump_path = pytorch_dump_folder_path + "/" + WEIGHTS_NAME
