@@ -121,7 +121,7 @@ class GPT2InfinityTokenizerFast(PreTrainedTokenizerFast):
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
     max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
     model_input_names = ["input_ids", "attention_mask"]
-    slow_tokenizer_class = GPT2InfinityTokenizer
+    slow_processor_class = GPT2InfinityTokenizer
 
     def __init__(
         self,

@@ -46,7 +46,7 @@ from ...modeling_utils import (
 )
 from ...utils import logging
 from ...utils.model_parallel_utils import assert_device_map, get_device_map
-from .configuration_gpt2 import GPT2InfinityConfig
+from .configuration_gpt2_infinity import GPT2InfinityConfig
 
 from .long_term_attention import LongTermAttention 
 
@@ -690,7 +690,7 @@ class GPT2InfinityModel(GPT2InfinityPreTrainedModel):
 
     @add_start_docstrings_to_model_forward(GPT2_INFINITY_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
-        tokenizer_class=_TOKENIZER_FOR_DOC,
+        processor_class=_TOKENIZER_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_DOC,
         output_type=BaseModelOutputWithPastAndCrossAttentions,
         config_class=_CONFIG_FOR_DOC,
@@ -998,7 +998,7 @@ class GPT2InfinityLMHeadModel(GPT2InfinityPreTrainedModel):
 
     @add_start_docstrings_to_model_forward(GPT2_INFINITY_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
-        tokenizer_class=_TOKENIZER_FOR_DOC,
+        processor_class=_TOKENIZER_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_DOC,
         output_type=CausalLMOutputWithCrossAttentions,
         config_class=_CONFIG_FOR_DOC,
@@ -1354,7 +1354,7 @@ class GPT2InfinityForSequenceClassification(GPT2InfinityPreTrainedModel):
 
     @add_start_docstrings_to_model_forward(GPT2_INFINITY_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
-        tokenizer_class=_TOKENIZER_FOR_DOC,
+        processor_class=_TOKENIZER_FOR_DOC,
         checkpoint="microsoft/dialogrpt",
         output_type=SequenceClassifierOutputWithPast,
         config_class=_CONFIG_FOR_DOC,
