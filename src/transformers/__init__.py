@@ -213,6 +213,8 @@ _import_structure = {
     "models.funnel": ["FUNNEL_PRETRAINED_CONFIG_ARCHIVE_MAP", "FunnelConfig", "FunnelTokenizer"],
     "models.glpn": ["GLPN_PRETRAINED_CONFIG_ARCHIVE_MAP", "GLPNConfig"],
     "models.gpt2": ["GPT2_PRETRAINED_CONFIG_ARCHIVE_MAP", "GPT2Config", "GPT2Tokenizer"],
+    # TODO - remove GPT2InfinityTokenizer
+    "models.gpt2_infinity": ["GPT2_INFINITY_PRETRAINED_CONFIG_ARCHIVE_MAP", "GPT2InfinityConfig", "GPT2InfinityTokenizer"],
     "models.gpt_neo": ["GPT_NEO_PRETRAINED_CONFIG_ARCHIVE_MAP", "GPTNeoConfig"],
     "models.gpt_neox": ["GPT_NEOX_PRETRAINED_CONFIG_ARCHIVE_MAP", "GPTNeoXConfig"],
     "models.gptj": ["GPTJ_PRETRAINED_CONFIG_ARCHIVE_MAP", "GPTJConfig"],
@@ -515,6 +517,8 @@ else:
     _import_structure["models.fnet"].append("FNetTokenizerFast")
     _import_structure["models.funnel"].append("FunnelTokenizerFast")
     _import_structure["models.gpt2"].append("GPT2TokenizerFast")
+    # TODO - remove GPT2InfinityTokenizerFast
+    _import_structure["models.gpt2_infinity"].append("GPT2InfinityTokenizerFast")
     _import_structure["models.gpt_neox"].append("GPTNeoXTokenizerFast")
     _import_structure["models.herbert"].append("HerbertTokenizerFast")
     _import_structure["models.layoutlm"].append("LayoutLMTokenizerFast")
@@ -1156,6 +1160,18 @@ else:
             "GPT2Model",
             "GPT2PreTrainedModel",
             "load_tf_weights_in_gpt2",
+        ]
+    )
+    _import_structure["models.gpt2_infinity"].extend(
+        [
+            "GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST",
+            "GPT2InfinityDoubleHeadsModel",
+            "GPT2InfinityForSequenceClassification",
+            "GPT2InfinityForTokenClassification",
+            "GPT2InfinityLMHeadModel",
+            "GPT2InfinityModel",
+            "GPT2InfinityPreTrainedModel",
+            "load_tf_weights_in_gpt2_infinity",
         ]
     )
     _import_structure["models.gpt_neo"].extend(
@@ -2165,6 +2181,17 @@ else:
             "TFGPT2PreTrainedModel",
         ]
     )
+    _import_structure["models.gpt2_infinity"].extend(
+        [
+            "TF_GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST",
+            "TFGPT2InfinityDoubleHeadsModel",
+            "TFGPT2InfinityForSequenceClassification",
+            "TFGPT2InfinityLMHeadModel",
+            "TFGPT2InfinityMainLayer",
+            "TFGPT2InfinityModel",
+            "TFGPT2InfinityPreTrainedModel",
+        ]
+    )
     _import_structure["models.gptj"].extend(
         [
             "TFGPTJForCausalLM",
@@ -2594,6 +2621,9 @@ else:
     )
     _import_structure["models.encoder_decoder"].append("FlaxEncoderDecoderModel")
     _import_structure["models.gpt2"].extend(["FlaxGPT2LMHeadModel", "FlaxGPT2Model", "FlaxGPT2PreTrainedModel"])
+    _import_structure["models.gpt2_infinity"].extend(
+        ["FlaxGPT2InfinityLMHeadModel", "FlaxGPT2InfinityModel", "FlaxGPT2InfinityPreTrainedModel"]
+    )
     _import_structure["models.gpt_neo"].extend(
         ["FlaxGPTNeoForCausalLM", "FlaxGPTNeoModel", "FlaxGPTNeoPreTrainedModel"]
     )
@@ -2839,6 +2869,12 @@ if TYPE_CHECKING:
     from .models.funnel import FUNNEL_PRETRAINED_CONFIG_ARCHIVE_MAP, FunnelConfig, FunnelTokenizer
     from .models.glpn import GLPN_PRETRAINED_CONFIG_ARCHIVE_MAP, GLPNConfig
     from .models.gpt2 import GPT2_PRETRAINED_CONFIG_ARCHIVE_MAP, GPT2Config, GPT2Tokenizer
+    # TODO - remove GPT2InfinityTokenizer
+    from .models.gpt2_infinity import (
+        GPT2_INFINITY_PRETRAINED_CONFIG_ARCHIVE_MAP,
+        GPT2InfinityConfig,
+        GPT2InfinityTokenizer
+    )
     from .models.gpt_neo import GPT_NEO_PRETRAINED_CONFIG_ARCHIVE_MAP, GPTNeoConfig
     from .models.gpt_neox import GPT_NEOX_PRETRAINED_CONFIG_ARCHIVE_MAP, GPTNeoXConfig
     from .models.gptj import GPTJ_PRETRAINED_CONFIG_ARCHIVE_MAP, GPTJConfig
@@ -3108,6 +3144,8 @@ if TYPE_CHECKING:
         from .models.fnet import FNetTokenizerFast
         from .models.funnel import FunnelTokenizerFast
         from .models.gpt2 import GPT2TokenizerFast
+        # TODO - remove GPT2InfinityTokenizerFast
+        from .models.gpt2_infinity import GPT2InfinityTokenizerFast
         from .models.gpt_neox import GPTNeoXTokenizerFast
         from .models.herbert import HerbertTokenizerFast
         from .models.layoutlm import LayoutLMTokenizerFast
@@ -3645,6 +3683,16 @@ if TYPE_CHECKING:
             GPT2Model,
             GPT2PreTrainedModel,
             load_tf_weights_in_gpt2,
+        )
+        from .models.gpt2_infinity import (
+            GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST,
+            GPT2InfinityDoubleHeadsModel,
+            GPT2InfinityForSequenceClassification,
+            GPT2InfinityForTokenClassification,
+            GPT2InfinityLMHeadModel,
+            GPT2InfinityModel,
+            GPT2InfinityPreTrainedModel,
+            load_tf_weights_in_gpt2_infinity,
         )
         from .models.gpt_neo import (
             GPT_NEO_PRETRAINED_MODEL_ARCHIVE_LIST,
@@ -4479,6 +4527,15 @@ if TYPE_CHECKING:
             TFGPT2Model,
             TFGPT2PreTrainedModel,
         )
+        from .models.gpt2_infinity import (
+            TF_GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST,
+            TFGPT2InfinityDoubleHeadsModel,
+            TFGPT2InfinityForSequenceClassification,
+            TFGPT2InfinityLMHeadModel,
+            TFGPT2InfinityMainLayer,
+            TFGPT2InfinityModel,
+            TFGPT2InfinityPreTrainedModel,
+        )
         from .models.gptj import (
             TFGPTJForCausalLM,
             TFGPTJForQuestionAnswering,
@@ -4807,6 +4864,11 @@ if TYPE_CHECKING:
         )
         from .models.encoder_decoder import FlaxEncoderDecoderModel
         from .models.gpt2 import FlaxGPT2LMHeadModel, FlaxGPT2Model, FlaxGPT2PreTrainedModel
+        from .models.gpt2_infinity import (
+            FlaxGPT2InfinityLMHeadModel,
+            FlaxGPT2InfinityModel,
+            FlaxGPT2InfinityPreTrainedModel
+        )
         from .models.gpt_neo import FlaxGPTNeoForCausalLM, FlaxGPTNeoModel, FlaxGPTNeoPreTrainedModel
         from .models.gptj import FlaxGPTJForCausalLM, FlaxGPTJModel, FlaxGPTJPreTrainedModel
         from .models.longt5 import FlaxLongT5ForConditionalGeneration, FlaxLongT5Model, FlaxLongT5PreTrainedModel
