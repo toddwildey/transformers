@@ -62,6 +62,7 @@ from . import (
     funnel,
     glpn,
     gpt2,
+    gpt2_infinity,
     gpt_neo,
     gpt_neox,
     gptj,
