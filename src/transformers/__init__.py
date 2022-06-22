@@ -2181,17 +2181,18 @@ else:
             "TFGPT2PreTrainedModel",
         ]
     )
-    _import_structure["models.gpt2_infinity"].extend(
-        [
-            "TF_GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST",
-            "TFGPT2InfinityDoubleHeadsModel",
-            "TFGPT2InfinityForSequenceClassification",
-            "TFGPT2InfinityLMHeadModel",
-            "TFGPT2InfinityMainLayer",
-            "TFGPT2InfinityModel",
-            "TFGPT2InfinityPreTrainedModel",
-        ]
-    )
+    # TODO - uncomment when TensorFlow support is available
+    # _import_structure["models.gpt2_infinity"].extend(
+    #     [
+    #         "TF_GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST",
+    #         "TFGPT2InfinityDoubleHeadsModel",
+    #         "TFGPT2InfinityForSequenceClassification",
+    #         "TFGPT2InfinityLMHeadModel",
+    #         "TFGPT2InfinityMainLayer",
+    #         "TFGPT2InfinityModel",
+    #         "TFGPT2InfinityPreTrainedModel",
+    #     ]
+    # )
     _import_structure["models.gptj"].extend(
         [
             "TFGPTJForCausalLM",
@@ -2621,9 +2622,10 @@ else:
     )
     _import_structure["models.encoder_decoder"].append("FlaxEncoderDecoderModel")
     _import_structure["models.gpt2"].extend(["FlaxGPT2LMHeadModel", "FlaxGPT2Model", "FlaxGPT2PreTrainedModel"])
-    _import_structure["models.gpt2_infinity"].extend(
-        ["FlaxGPT2InfinityLMHeadModel", "FlaxGPT2InfinityModel", "FlaxGPT2InfinityPreTrainedModel"]
-    )
+    # TODO - uncomment when Flax support is available
+    # _import_structure["models.gpt2_infinity"].extend(
+    #     ["FlaxGPT2InfinityLMHeadModel", "FlaxGPT2InfinityModel", "FlaxGPT2InfinityPreTrainedModel"]
+    # )
     _import_structure["models.gpt_neo"].extend(
         ["FlaxGPTNeoForCausalLM", "FlaxGPTNeoModel", "FlaxGPTNeoPreTrainedModel"]
     )
@@ -4527,15 +4529,16 @@ if TYPE_CHECKING:
             TFGPT2Model,
             TFGPT2PreTrainedModel,
         )
-        from .models.gpt2_infinity import (
-            TF_GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST,
-            TFGPT2InfinityDoubleHeadsModel,
-            TFGPT2InfinityForSequenceClassification,
-            TFGPT2InfinityLMHeadModel,
-            TFGPT2InfinityMainLayer,
-            TFGPT2InfinityModel,
-            TFGPT2InfinityPreTrainedModel,
-        )
+        # TODO - uncomment when TensorFlow support is available
+        # from .models.gpt2_infinity import (
+        #     TF_GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST,
+        #     TFGPT2InfinityDoubleHeadsModel,
+        #     TFGPT2InfinityForSequenceClassification,
+        #     TFGPT2InfinityLMHeadModel,
+        #     TFGPT2InfinityMainLayer,
+        #     TFGPT2InfinityModel,
+        #     TFGPT2InfinityPreTrainedModel,
+        # )
         from .models.gptj import (
             TFGPTJForCausalLM,
             TFGPTJForQuestionAnswering,
@@ -4864,11 +4867,12 @@ if TYPE_CHECKING:
         )
         from .models.encoder_decoder import FlaxEncoderDecoderModel
         from .models.gpt2 import FlaxGPT2LMHeadModel, FlaxGPT2Model, FlaxGPT2PreTrainedModel
-        from .models.gpt2_infinity import (
-            FlaxGPT2InfinityLMHeadModel,
-            FlaxGPT2InfinityModel,
-            FlaxGPT2InfinityPreTrainedModel
-        )
+        # TODO - uncomment when Flax support is available
+        # from .models.gpt2_infinity import (
+        #     FlaxGPT2InfinityLMHeadModel,
+        #     FlaxGPT2InfinityModel,
+        #     FlaxGPT2InfinityPreTrainedModel
+        # )
         from .models.gpt_neo import FlaxGPTNeoForCausalLM, FlaxGPTNeoModel, FlaxGPTNeoPreTrainedModel
         from .models.gptj import FlaxGPTJForCausalLM, FlaxGPTJModel, FlaxGPTJPreTrainedModel
         from .models.longt5 import FlaxLongT5ForConditionalGeneration, FlaxLongT5Model, FlaxLongT5PreTrainedModel

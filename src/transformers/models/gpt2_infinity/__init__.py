@@ -58,29 +58,31 @@ else:
         "load_tf_weights_in_gpt2_infinity",
     ]
 
-try:
-    if not is_tf_available():
-        raise OptionalDependencyNotAvailable()
-except OptionalDependencyNotAvailable:
-    pass
-else:
-    _import_structure["modeling_tf_gpt2_infinity"] = [
-        "TF_GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST",
-        "TFGPT2InfinityDoubleHeadsModel",
-        "TFGPT2InfinityForSequenceClassification",
-        "TFGPT2InfinityLMHeadModel",
-        "TFGPT2InfinityMainLayer",
-        "TFGPT2InfinityModel",
-        "TFGPT2InfinityPreTrainedModel",
-    ]
+# TODO - uncomment when TensorFlow support is available
+# try:
+#     if not is_tf_available():
+#         raise OptionalDependencyNotAvailable()
+# except OptionalDependencyNotAvailable:
+#     pass
+# else:
+#     _import_structure["modeling_tf_gpt2_infinity"] = [
+#         "TF_GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST",
+#         "TFGPT2InfinityDoubleHeadsModel",
+#         "TFGPT2InfinityForSequenceClassification",
+#         "TFGPT2InfinityLMHeadModel",
+#         "TFGPT2InfinityMainLayer",
+#         "TFGPT2InfinityModel",
+#         "TFGPT2InfinityPreTrainedModel",
+#     ]
 
-try:
-    if not is_flax_available():
-        raise OptionalDependencyNotAvailable()
-except OptionalDependencyNotAvailable:
-    pass
-else:
-    _import_structure["modeling_flax_gpt2_infinity"] = ["FlaxGPT2InfinityLMHeadModel", "FlaxGPT2InfinityModel", "FlaxGPT2InfinityPreTrainedModel"]
+# TODO - uncomment when Flax support is available
+# try:
+#     if not is_flax_available():
+#         raise OptionalDependencyNotAvailable()
+# except OptionalDependencyNotAvailable:
+#     pass
+# else:
+#     _import_structure["modeling_flax_gpt2_infinity"] = ["FlaxGPT2InfinityLMHeadModel", "FlaxGPT2InfinityModel", "FlaxGPT2InfinityPreTrainedModel"]
 
 if TYPE_CHECKING:
     from .configuration_gpt2_infinity import GPT2_INFINITY_PRETRAINED_CONFIG_ARCHIVE_MAP, GPT2InfinityConfig, GPT2InfinityOnnxConfig
@@ -111,29 +113,31 @@ if TYPE_CHECKING:
             load_tf_weights_in_gpt2_infinity,
         )
 
-    try:
-        if not is_tf_available():
-            raise OptionalDependencyNotAvailable()
-    except OptionalDependencyNotAvailable:
-        pass
-    else:
-        from .modeling_tf_gpt2_infinity import (
-            TF_GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST,
-            TFGPT2InfinityDoubleHeadsModel,
-            TFGPT2InfinityForSequenceClassification,
-            TFGPT2InfinityLMHeadModel,
-            TFGPT2InfinityMainLayer,
-            TFGPT2InfinityModel,
-            TFGPT2InfinityPreTrainedModel,
-        )
+    # TODO - uncomment when TensorFlow support is available
+    # try:
+    #     if not is_tf_available():
+    #         raise OptionalDependencyNotAvailable()
+    # except OptionalDependencyNotAvailable:
+    #     pass
+    # else:
+    #     from .modeling_tf_gpt2_infinity import (
+    #         TF_GPT2_INFINITY_PRETRAINED_MODEL_ARCHIVE_LIST,
+    #         TFGPT2InfinityDoubleHeadsModel,
+    #         TFGPT2InfinityForSequenceClassification,
+    #         TFGPT2InfinityLMHeadModel,
+    #         TFGPT2InfinityMainLayer,
+    #         TFGPT2InfinityModel,
+    #         TFGPT2InfinityPreTrainedModel,
+    #     )
 
-    try:
-        if not is_flax_available():
-            raise OptionalDependencyNotAvailable()
-    except OptionalDependencyNotAvailable:
-        pass
-    else:
-        from .modeling_flax_gpt2_infinity import FlaxGPT2InfinityLMHeadModel, FlaxGPT2InfinityModel, FlaxGPT2InfinityPreTrainedModel
+    # TODO - uncomment when Flax support is available
+    # try:
+    #     if not is_flax_available():
+    #         raise OptionalDependencyNotAvailable()
+    # except OptionalDependencyNotAvailable:
+    #     pass
+    # else:
+    #     from .modeling_flax_gpt2_infinity import FlaxGPT2InfinityLMHeadModel, FlaxGPT2InfinityModel, FlaxGPT2InfinityPreTrainedModel
 
 else:
     import sys
