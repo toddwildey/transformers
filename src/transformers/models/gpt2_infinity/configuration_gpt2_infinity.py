@@ -69,6 +69,7 @@ class GPT2InfinityConfig(PretrainedConfig):
         mask_type='cnn',
         mask_dropout=.1,
         kl_regularizer=False,
+        kl_m=1e-6,
         sigma_0=.05,
         **kwargs
     ):
@@ -108,6 +109,7 @@ class GPT2InfinityConfig(PretrainedConfig):
         self.mask_type = mask_type
         self.mask_dropout = mask_dropout
         self.kl_regularizer = kl_regularizer
+        self.kl_m = kl_m
         self.sigma_0 = sigma_0
 
     @property

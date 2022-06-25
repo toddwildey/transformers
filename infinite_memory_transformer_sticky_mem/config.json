@@ -14,7 +14,7 @@
   "gradient_checkpointing": false,
   "infinite_memory": true,
   "initializer_range": 0.02,
-  "kl_regularizer": false,
+  "kl_regularizer": true,
   "layer_norm_epsilon": 1e-05,
   "long_term_attention": true,
   "long_term_attention_basis": 512,

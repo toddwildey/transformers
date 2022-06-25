@@ -905,7 +905,7 @@ class GPT2InfinityModel(GPT2InfinityPreTrainedModel):
                 hidden_states=all_hidden_states,
                 attentions=all_self_attentions,
                 cross_attentions=all_cross_attentions,
-                ), kl_regs   
+            ), kl_regs
 
         return BaseModelOutputWithPastAndCrossAttentions(
             last_hidden_state=hidden_states,
@@ -940,6 +940,7 @@ class GPT2InfinityLMHeadModel(GPT2InfinityPreTrainedModel):
         self.long_term_attention = config.long_term_attention
         if self.long_term_attention:
             self.kl_regularizer= config.kl_regularizer
+            self.kl_m= config.kl_m
         
 
     @add_start_docstrings(PARALLELIZE_DOCSTRING)
@@ -1084,6 +1085,9 @@ class GPT2InfinityLMHeadModel(GPT2InfinityPreTrainedModel):
             return ((loss,) + output) if loss is not None else output
 
         if self.long_term_attention and self.kl_regularizer:
+            if kl_regs is not None:
+                kl_reg = kl_regs.mean()
+                loss = loss + self.kl_m * kl_reg
             return CausalLMOutputWithCrossAttentions(
                 loss=loss,
                 logits=lm_logits,
@@ -1091,7 +1095,7 @@ class GPT2InfinityLMHeadModel(GPT2InfinityPreTrainedModel):
                 hidden_states=transformer_outputs.hidden_states,
                 attentions=transformer_outputs.attentions,
                 cross_attentions=transformer_outputs.cross_attentions,
-                ), kl_regs
+            )
 
         
         return CausalLMOutputWithCrossAttentions(
