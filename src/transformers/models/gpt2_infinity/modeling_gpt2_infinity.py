@@ -215,6 +215,7 @@ class Attention(nn.Module):
             # Apply the attention mask
             w = w + attention_mask
 
+        w = torch.clamp(w, 0.0)
         w = nn.Softmax(dim=-1)(w)
         w = self.attn_dropout(w)
 
