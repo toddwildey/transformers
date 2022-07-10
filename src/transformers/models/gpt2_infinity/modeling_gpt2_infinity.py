@@ -142,11 +142,13 @@ class Attention(nn.Module):
         self.split_size = n_state
         self.scale = scale
         self.is_cross_attention = is_cross_attention
+
         if self.is_cross_attention:
             self.c_attn = Conv1D(2 * n_state, nx)
             self.q_attn = Conv1D(n_state, nx)
         else:
             self.c_attn = Conv1D(3 * n_state, nx)
+
         self.c_proj = Conv1D(n_state, nx)
         self.attn_dropout = nn.Dropout(config.attn_pdrop)
         self.resid_dropout = nn.Dropout(config.resid_pdrop)
@@ -155,28 +157,31 @@ class Attention(nn.Module):
         self.use_long_term_attention = config.long_term_attention
 
         if self.use_long_term_attention:
-            self.kl_regularizer=config.kl_regularizer
-            long_term_attn_mechanism = partial(LongTermAttention,
-                                            attn_num_basis=config.long_term_attention_basis,
-                                            head_size=int(config.n_embd/config.n_head),
-                                            length=512,
-                                            target_len=512,
-                                            attn_func=config.long_term_attention_norm,
-                                            continuous=config.continuous,
-                                            infinite_memory=config.infinite_memory,
-                                            n_layers=config.n_layer,
-                                            attn_drop=config.attn_drop,
-                                            n_heads=self.n_head,
-                                            affines=config.affines,
-                                            mask=config.mask,
-                                            mask_type=config.mask_type,
-                                            mask_dropout=config.mask_dropout,
-                                            kl_regularizer=self.kl_regularizer,
-                                            sigma_0=config.sigma_0,
-                                            mu_0=config.mu_0,
-                                            sticky_memories=config.sticky_memories,
-                                            )
-            self.long_term_attention=long_term_attn_mechanism()
+            self.kl_regularizer = config.kl_regularizer
+            long_term_attn_mechanism  =  partial(
+                LongTermAttention,
+                attn_num_basis = config.long_term_attention_basis,
+                head_size = int(config.n_embd/config.n_head),
+                length = 512,
+                target_len = 512,
+                attn_func = config.long_term_attention_norm,
+                continuous = config.continuous,
+                infinite_memory = config.infinite_memory,
+                n_layers = config.n_layer,
+                attn_drop = config.attn_drop,
+                n_heads = self.n_head,
+                affines = config.affines,
+                mask = config.mask,
+                mask_type = config.mask_type,
+                mask_dropout = config.mask_dropout,
+                kl_regularizer = self.kl_regularizer,
+                sigma_0 = config.sigma_0,
+                mu_0 = config.mu_0,
+                sticky_memories = config.sticky_memories,
+            )
+
+            self.long_term_attention = long_term_attn_mechanism()
+
             if self.kl_regularizer:
                 self.kl_reg=None
         else:
@@ -200,8 +205,8 @@ class Attention(nn.Module):
         self.pruned_heads = self.pruned_heads.union(heads)
 
     def _attn(self, q, k, v, attention_mask=None, head_mask=None, output_attentions=False):
-        
         w = torch.matmul(q, k)
+
         if self.scale:
             w = w / (float(v.size(-1)) ** 0.5)
         nd, ns = w.size(-2), w.size(-1)
@@ -224,7 +229,7 @@ class Attention(nn.Module):
             w = w * head_mask
 
         outputs = (torch.matmul(w, v),)
-        
+
         return outputs
 
     def merge_heads(self, x):
@@ -240,6 +245,10 @@ class Attention(nn.Module):
         else:
             return x.permute(0, 2, 1, 3)  # (batch, head, seq_length, head_features)
 
+    def reset_attention(self):
+        if self.use_long_term_attention:
+            self.long_term_attention.reset_inf()
+
     def forward(
         self,
         hidden_states,
@@ -252,8 +261,6 @@ class Attention(nn.Module):
         output_attentions=False,
         mem=None
     ):
-        
-       
         if encoder_hidden_states is not None:
             assert hasattr(
                 self, "q_attn"
@@ -263,7 +270,7 @@ class Attention(nn.Module):
             attention_mask = encoder_attention_mask
         else:
             query, key, value = self.c_attn(hidden_states).split(self.split_size, dim=2)
-           
+
         query = self.split_heads(query)
         key = self.split_heads(key, k=True)
         value = self.split_heads(value)
@@ -279,12 +286,11 @@ class Attention(nn.Module):
             present = None
 
         attn_outputs = self._attn(query, key, value, attention_mask, head_mask, output_attentions)
-        
+
         a = attn_outputs[0]
 
         a = self.merge_heads(a)
         a = self.c_proj(a)
-        
 
         if self.use_long_term_attention and mem is not None:
             if self.kl_regularizer:
@@ -293,7 +299,7 @@ class Attention(nn.Module):
                 a_long_term = self.long_term_attention(mem, query)
 
         if self.use_long_term_attention and mem is not None:
-            a+=a_long_term
+            a += a_long_term
 
         a = self.resid_dropout(a)
 
@@ -301,7 +307,7 @@ class Attention(nn.Module):
             return (a, present) + attn_outputs[1:], kl_reg  # a, present, (attentions)
         elif self.use_long_term_attention and self.kl_regularizer:
             return (a, present) + attn_outputs[1:], None  # a, present, (attentions)
-        
+
         return (a, present) + attn_outputs[1:]  # a, present, (attentions)
 
 
@@ -328,49 +334,56 @@ class Block(nn.Module):
         self.ln_1 = nn.LayerNorm(hidden_size, eps=config.layer_norm_epsilon)
         self.attn = Attention(hidden_size, n_ctx, config, scale)
         self.ln_2 = nn.LayerNorm(hidden_size, eps=config.layer_norm_epsilon)
+
         if config.add_cross_attention:
             self.crossattention = Attention(hidden_size, n_ctx, config, scale, is_cross_attention=True)
             self.ln_cross_attn = nn.LayerNorm(hidden_size, eps=config.layer_norm_epsilon)
-        self.mlp = MLP(inner_dim, config)
-        
-        self.long_term_attention=config.long_term_attention
-        if self.long_term_attention:
-            self.kl_regularizer=config.kl_regularizer
 
-        self.mem=None
+        self.mlp = MLP(inner_dim, config)
+
+        self.long_term_attention = config.long_term_attention
+        if self.long_term_attention:
+            self.kl_regularizer = config.kl_regularizer
+
+        self.mem = None
+
+    def reset(self):
+        self.mem = None
+        self.attn.reset_attention()
+
+        if hasattr(self, 'crossattention'):
+            self.crossattention.reset_attention()
 
     def forward(
         self,
         hidden_states,
-        layer_past=None,
-        attention_mask=None,
-        head_mask=None,
-        encoder_hidden_states=None,
-        encoder_attention_mask=None,
-        use_cache=False,
-        output_attentions=False,
+        layer_past = None,
+        attention_mask = None,
+        head_mask = None,
+        encoder_hidden_states = None,
+        encoder_attention_mask = None,
+        use_cache = False,
+        output_attentions = False,
     ):
-
-
         if self.long_term_attention and self.kl_regularizer:
             attn_outputs, kl_reg = self.attn(
                 self.ln_1(hidden_states),
-                layer_past=layer_past,
-                attention_mask=attention_mask,
-                head_mask=head_mask,
-                use_cache=use_cache,
-                output_attentions=output_attentions,
-                mem=self.mem
+                layer_past = layer_past,
+                attention_mask = attention_mask,
+                head_mask = head_mask,
+                use_cache = use_cache,
+                output_attentions = output_attentions,
+                mem = self.mem
             )
         else:
             attn_outputs = self.attn(
                 self.ln_1(hidden_states),
-                layer_past=layer_past,
-                attention_mask=attention_mask,
-                head_mask=head_mask,
-                use_cache=use_cache,
-                output_attentions=output_attentions,
-                mem=self.mem
+                layer_past = layer_past,
+                attention_mask = attention_mask,
+                head_mask = head_mask,
+                use_cache = use_cache,
+                output_attentions = output_attentions,
+                mem = self.mem
             )
 
         if self.long_term_attention:
@@ -628,7 +641,7 @@ class GPT2InfinityModel(GPT2InfinityPreTrainedModel):
         self.wte = nn.Embedding(config.vocab_size, config.n_embd)
         self.wpe = nn.Embedding(config.n_positions, config.n_embd)
         self.drop = nn.Dropout(config.embd_pdrop)
-        self.h = nn.ModuleList([Block(config.n_ctx, config, scale=True) for _ in range(config.n_layer)])
+        self.h = nn.ModuleList([ Block(config.n_ctx, config, scale=True) for _ in range(config.n_layer) ])
         self.ln_f = nn.LayerNorm(config.n_embd, eps=config.layer_norm_epsilon)
         self.long_term_attention = config.long_term_attention
 
@@ -688,6 +701,10 @@ class GPT2InfinityModel(GPT2InfinityPreTrainedModel):
         """
         for layer, heads in heads_to_prune.items():
             self.h[layer].attn.prune_heads(heads)
+
+    def reset(self):
+        for block in self.h:
+            block.reset()
 
     @add_start_docstrings_to_model_forward(GPT2_INFINITY_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
@@ -799,8 +816,8 @@ class GPT2InfinityModel(GPT2InfinityPreTrainedModel):
         all_self_attentions = () if output_attentions else None
         all_cross_attentions = () if output_attentions and self.config.add_cross_attention else None
         all_hidden_states = () if output_hidden_states else None
-        kl_regs=None
-        c_losses=None
+        kl_regs = None
+        c_losses = None
         for i, (block, layer_past) in enumerate(zip(self.h, past_key_values)):
             #print('\n')
             #print('layer', i)
@@ -815,11 +832,11 @@ class GPT2InfinityModel(GPT2InfinityPreTrainedModel):
                     attention_mask = attention_mask.to(hidden_states.device)
                 if isinstance(head_mask, torch.Tensor):
                     head_mask = head_mask.to(hidden_states.device)
+
             if output_hidden_states:
                 all_hidden_states = all_hidden_states + (hidden_states,)
 
             if getattr(self.config, "gradient_checkpointing", False) and self.training:
-
                 if use_cache:
                     logger.warn(
                         "`use_cache=True` is incompatible with `config.gradient_checkpointing=True`. Setting "
@@ -834,7 +851,7 @@ class GPT2InfinityModel(GPT2InfinityPreTrainedModel):
 
                     return custom_forward
 
-                
+                # TODO - this code path has not been hit
                 outputs = torch.utils.checkpoint.checkpoint(
                     create_custom_forward(block),
                     hidden_states,
@@ -870,9 +887,9 @@ class GPT2InfinityModel(GPT2InfinityPreTrainedModel):
 
             if self.long_term_attention and self.kl_regularizer:
                 if kl_regs is None:
-                    kl_regs=kl_reg
+                    kl_regs = kl_reg
                 else:
-                    kl_regs+=kl_reg
+                    kl_regs += kl_reg
 
             hidden_states = outputs[0]
             if use_cache is True:
