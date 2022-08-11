@@ -5,7 +5,7 @@ source .env/bin/activate
 
 DATASET_NAME="wikitext"
 DATASET_CONFIG_NAME="wikitext-103-raw-v1"
-OUTPUT_DIR="../models/gpt2_infinity/checkpoints"
+OUTPUT_DIR="../models/gpt2_infinity/focused/checkpoints"
 
 ./clean_old_checkpoints.sh "$OUTPUT_DIR" 2>&1 > /dev/null &
 CLEAN_CHECKPOINTS_PID="$?"

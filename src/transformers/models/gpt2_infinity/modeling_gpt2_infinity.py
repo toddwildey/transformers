@@ -1015,6 +1015,9 @@ class GPT2InfinityLMHeadModel(GPT2InfinityPreTrainedModel):
             "token_type_ids": token_type_ids,
         }
 
+    def reset(self):
+        self.transformer.reset()
+
     @add_start_docstrings_to_model_forward(GPT2_INFINITY_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
         processor_class=_TOKENIZER_FOR_DOC,
