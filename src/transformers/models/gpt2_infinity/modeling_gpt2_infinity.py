@@ -1066,7 +1066,6 @@ class GPT2InfinityLMHeadModel(GPT2InfinityPreTrainedModel):
                 output_hidden_states=output_hidden_states,
                 return_dict=return_dict,
             )
-        
         else:
             transformer_outputs = self.transformer(
                 input_ids,

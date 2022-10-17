@@ -92,14 +92,16 @@ class LongTermAttention(nn.Module):
         if self.sticky_memories:
             self.attn_past = None
 
-        self.mem_threshold = 2048
+        # TODO - remove this in favor of self.reset_inf()
+        # self.mem_threshold = 2048
         self.infinite_memory = infinite_memory # whether the memory is infinite
 
         self.nb_samples = 512 # number of samples used for update
         self.tau = 0.5 #compressing factor
         self.count = 0
 
-        self.x_past = None # previous memory vectors
+        # TODO - determine if x_part is ever needed
+        # self.x_past = None # previous memory vectors
         self.B_past = None # previous coefficient matrix
 
         self.ridge_penalty=0.5 # ridge penalty
@@ -255,7 +257,9 @@ class LongTermAttention(nn.Module):
 
     def reset_inf(self):
         self.B_past = None
-        self.x_past = None
+        # TODO - determine if x_part is ever needed
+        # self.x_past = None
+        self.count = 0
 
     def update_inf(self, x):
         if self.B_past is not None:
@@ -295,7 +299,8 @@ class LongTermAttention(nn.Module):
             B = self.value_function(x)
 
         self.B_past = B.detach()
-        self.x_past = x
+        # TODO - determine if x_part is ever needed
+        # self.x_past = x
 
         return B
 
@@ -306,11 +311,12 @@ class LongTermAttention(nn.Module):
             klen = k.size(1) #key length
             self.d_head = self.head_size #head size
 
+            # TODO - remove this in favor of self.reset_inf()
             # clean memory if going through different document
-            if self.count >= self.mem_threshold:
-                self.B_past = None 
-                self.x_past = None
-                self.count = 0
+            # if self.count >= self.mem_threshold:
+            #     self.B_past = None
+            #     self.x_past = None
+            #     self.count = 0
 
             k = k.permute(0, 2, 1) # [B,e,L]
             if self.mask_dropout_value > 0:
