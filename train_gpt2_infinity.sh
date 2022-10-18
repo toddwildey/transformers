@@ -32,12 +32,11 @@ while true; do
         --config_name=infinite_memory_transformer_sticky_mem \
         --per_device_eval_batch_size=1 \
         --per_device_train_batch_size=1 \
-        --dataset_name="$DATASET_NAME" \
-        --dataset_config_name="$DATASET_CONFIG_NAME" \
+        --dataset_name "$DATASET_NAME" \
+        --dataset_config_name "$DATASET_CONFIG_NAME" \
         --do_train \
         --save_steps=1000 \
         --block_size=512 \
-        --report_to="wandb" \
         --output_dir="$OUTPUT_DIR" \
         2>&1 | tee results
 done

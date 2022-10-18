@@ -167,7 +167,6 @@ _deps = [
     "unidic>=1.0.2",
     "unidic_lite>=1.0.7",
     "uvicorn",
-    "wandb>=0.13.4",
 ]
 
 
