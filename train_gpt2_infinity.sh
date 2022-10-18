@@ -25,6 +25,9 @@ trap cleanup SIGKILL
 trap cleanup SIGALRM
 trap cleanup SIGTERM
 
+export WANDB_WATCH="all"
+export WANDB_LOG_MODEL="true"
+
 while true; do
     python ./examples/pytorch/language-modeling/run_clm.py \
         --model_name_or_path=gpt2 \
@@ -37,6 +40,7 @@ while true; do
         --do_train \
         --save_steps=1000 \
         --block_size=512 \
+        --debug="underflow_overflow" \
         --report_to="wandb" \
         --output_dir="$OUTPUT_DIR" \
         2>&1 | tee results
