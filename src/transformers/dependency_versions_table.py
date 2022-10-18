@@ -11,7 +11,7 @@ deps = {
     "datasets": "datasets",
     "deepspeed": "deepspeed>=0.6.5",
     "dill": "dill<0.3.5",
-    "entmax": "entmax",
+    "entmax": "entmax==1.0",
     "fairscale": "fairscale>0.3",
     "faiss-cpu": "faiss-cpu",
     "fastapi": "fastapi",
