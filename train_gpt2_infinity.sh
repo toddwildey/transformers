@@ -38,5 +38,5 @@ while true; do
         --save_steps=1000 \
         --block_size=512 \
         --output_dir="$OUTPUT_DIR" \
-        2>&1 | tee results
+        2>&1
 done

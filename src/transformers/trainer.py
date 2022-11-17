@@ -803,7 +803,9 @@ class Trainer:
                 pin_memory=self.args.dataloader_pin_memory,
             )
 
-        train_sampler = self._get_train_sampler()
+        # TODO - figure out how to use a distributed train sampler that doesn't shuffle/randomize the documents
+        # train_sampler = self._get_train_sampler()
+        train_sampler = None
 
         return DataLoader(
             train_dataset,

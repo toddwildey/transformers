@@ -441,8 +441,7 @@ def main():
 
         # Split by chunks of max_len.
         result = {
-            k: [t[i : i + block_size] for i in range(0, total_length, block_size)]
-            for k, t in example.items()
+            k: [t[i : i + block_size] for i in range(0, total_length, block_size)] for k, t in example.items()
         }
 
         # Ensure everything is sized as a multiple of block_size
@@ -461,7 +460,7 @@ def main():
     # Main data processing function that will concatenate all texts from our dataset and generate chunks of block_size.
     def group_texts(examples, indices):
         examples_keys = examples.keys()
-        key_name = list(examples.keys())[0]
+        key_name = list(examples_keys)[0]
 
         result = {
             k: [] for k in examples_keys
