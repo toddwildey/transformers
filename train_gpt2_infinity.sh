@@ -3,8 +3,10 @@
 # Train gpt2_infinity model under ../transformers
 source .env/bin/activate
 
-DATASET_NAME="wikitext"
-DATASET_CONFIG_NAME="wikitext-103-raw-v1"
+export CUDA_VISIBLE_DEVICES=0
+
+DATASET_NAME="pg19"
+DATASET_CONFIG_NAME="pg19"
 OUTPUT_DIR="../models/gpt2_infinity/focused/checkpoints"
 
 ./clean_old_checkpoints.sh "$OUTPUT_DIR" 2>&1 > /dev/null &
