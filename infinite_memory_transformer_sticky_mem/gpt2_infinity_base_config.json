@@ -1,0 +1,28 @@
+{
+  "_name_or_path": "gpt2",
+  "affines": true,
+  "architectures": [
+    "GPT2InfinityLMHeadModel"
+  ],
+  "attn_drop": 0.1,
+  "continuous": true,
+  "gradient_checkpointing": false,
+  "infinite_memory": true,
+  "kl_regularizer": true,
+  "long_term_attention": true,
+  "long_term_attention_basis": 512,
+  "long_term_attention_norm": "softmax",
+  "mask": true,
+  "mask_dropout": 0,
+  "mask_type": "cnn",
+  "model_type": "gpt2_infinity",
+  "mu_0": -1,
+  "n_inner": null,
+  "n_special": 0,
+  "predict_special_tokens": true,
+  "sigma_0": 0.05,
+  "sticky_memories": true,
+  "summary_activation": null,
+  "transformers_version": "4.5.0.dev0",
+  "use_cache": true
+}
