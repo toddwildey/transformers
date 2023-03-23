@@ -2363,6 +2363,11 @@ class Trainer:
             # deepspeed handles loss scaling by gradient_accumulation_steps in its `backward`
             loss = loss / self.args.gradient_accumulation_steps
 
+        # TODO - remove this
+        # import torchviz
+        # graph = torchviz.make_dot(loss, params=dict(model.named_parameters()), show_attrs=True, show_saved=True)
+        # graph.render('gpt2-large-graph', format='png')
+
         if self.do_grad_scaling:
             self.scaler.scale(loss).backward()
         elif self.use_apex:

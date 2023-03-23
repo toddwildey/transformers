@@ -158,7 +158,7 @@ class Attention(nn.Module):
 
         if self.use_long_term_attention:
             self.kl_regularizer = config.kl_regularizer
-            long_term_attn_mechanism  =  partial(
+            long_term_attn_mechanism = partial(
                 LongTermAttention,
                 attn_num_basis = config.long_term_attention_basis,
                 head_size = int(config.n_embd/config.n_head),
@@ -183,9 +183,9 @@ class Attention(nn.Module):
             self.long_term_attention = long_term_attn_mechanism()
 
             if self.kl_regularizer:
-                self.kl_reg=None
+                self.kl_reg = None
         else:
-            self.kl_regularizer=False
+            self.kl_regularizer = False
 
     def prune_heads(self, heads):
         if len(heads) == 0:
@@ -440,6 +440,9 @@ class GPT2InfinityPreTrainedModel(PreTrainedModel):
     base_model_prefix = "transformer"
     is_parallelizable = True
 
+    # TODO - make this work
+    supports_gradient_checkpointing = True
+
     def __init__(self, *inputs, **kwargs):
         super().__init__(*inputs, **kwargs)
 
@@ -458,6 +461,12 @@ class GPT2InfinityPreTrainedModel(PreTrainedModel):
         elif isinstance(module, nn.LayerNorm):
             module.bias.data.zero_()
             module.weight.data.fill_(1.0)
+
+    def _set_gradient_checkpointing(self, module, value=False):
+        if isinstance(module, GPT2InfinityPreTrainedModel):
+            module.gradient_checkpointing = value
+            self.config.gradient_checkpointing = value
+            self.config.use_cache = not value
 
 
 @dataclass
@@ -646,9 +655,9 @@ class GPT2InfinityModel(GPT2InfinityPreTrainedModel):
         self.long_term_attention = config.long_term_attention
 
         if self.long_term_attention:
-            self.kl_regularizer=config.kl_regularizer
+            self.kl_regularizer = config.kl_regularizer
             if self.kl_regularizer:
-                self.kl_regs=None
+                self.kl_regs = None
 
         self.init_weights()
 
@@ -851,16 +860,37 @@ class GPT2InfinityModel(GPT2InfinityPreTrainedModel):
 
                     return custom_forward
 
+                if self.long_term_attention and self.kl_regularizer:
+                    outputs, kl_reg = torch.utils.checkpoint.checkpoint(
+                        create_custom_forward(block),
+                        hidden_states,
+                        None,
+                        attention_mask,
+                        head_mask[i],
+                        encoder_hidden_states,
+                        encoder_attention_mask
+                    )
+                else:
+                    outputs = torch.utils.checkpoint.checkpoint(
+                        create_custom_forward(block),
+                        hidden_states,
+                        None,
+                        attention_mask,
+                        head_mask[i],
+                        encoder_hidden_states,
+                        encoder_attention_mask
+                    )
+
                 # TODO - this code path has not been hit
-                outputs = torch.utils.checkpoint.checkpoint(
-                    create_custom_forward(block),
-                    hidden_states,
-                    None,
-                    attention_mask,
-                    head_mask[i],
-                    encoder_hidden_states,
-                    encoder_attention_mask,
-                )
+                # outputs = torch.utils.checkpoint.checkpoint(
+                #     create_custom_forward(block),
+                #     hidden_states,
+                #     None,
+                #     attention_mask,
+                #     head_mask[i],
+                #     encoder_hidden_states,
+                #     encoder_attention_mask,
+                # )
             else:
                 if self.long_term_attention and self.kl_regularizer:
                     outputs, kl_reg = block(
