@@ -9,24 +9,6 @@ DATASET_NAME="pg19"
 DATASET_CONFIG_NAME="pg19"
 OUTPUT_DIR="../models/gpt2_infinity/focused/checkpoints"
 
-./clean_old_checkpoints.sh "$OUTPUT_DIR" 2>&1 > /dev/null &
-CLEAN_CHECKPOINTS_PID="$?"
-disown %1
-
-function cleanup() {
-    kill "$CLEAN_CHECKPOINTS_PID"
-    exit
-}
-
-trap cleanup EXIT
-trap cleanup SIGHUP
-trap cleanup SIGINT
-trap cleanup SIGQUIT
-trap cleanup SIGABRT
-trap cleanup SIGKILL
-trap cleanup SIGALRM
-trap cleanup SIGTERM
-
 while true; do
     python ./examples/pytorch/language-modeling/run_clm.py \
         --model_name_or_path=gpt2 \
@@ -38,6 +20,7 @@ while true; do
         --dataset_config_name "$DATASET_CONFIG_NAME" \
         --do_train \
         --save_steps=1000 \
+        --save_total_limit=2 \
         --block_size=512 \
         --output_dir="$OUTPUT_DIR" \
         2>&1
