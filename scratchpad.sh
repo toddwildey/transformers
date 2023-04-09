@@ -26,7 +26,20 @@ cat input.result.json | jq -r '.example_idx[]'
 ./bootstrap_host.sh 129.213.25.170 ubuntu ~/.ssh/id_ed25519-lambda "gpt2-large_infinity"
 
 # Test setup.sh on host
-scp -i ~/.ssh/id_ed25519-lambda setup.sh ubuntu@129.213.25.170:/home/ubuntu/transformers/setup.sh
+scp -i ~/.ssh/id_ed25519-lambda get_model_path_for_evaluation.sh ubuntu@129.213.25.170:/home/ubuntu/transformers/
+
+# Download model from host
+export LAST_CHECKPOINT_ON_HOST=$(
+    ssh -i ~/.ssh/id_ed25519-lambda ubuntu@129.213.25.170 \
+        "/home/ubuntu/transformers/get_model_path_for_evaluation.sh /home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/"
+)
+
+ssh -i ~/.ssh/id_ed25519-lambda ubuntu@129.213.25.170 \
+        "tar -czvf /home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/$LAST_CHECKPOINT_ON_HOST.tar.gz /home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/$LAST_CHECKPOINT_ON_HOST"
+
+scp -i ~/.ssh/id_ed25519-lambda \
+    ubuntu@129.213.25.170:/home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/$LAST_CHECKPOINT_ON_HOST.tar.gz \
+    ../models/gpt2-large_infinity/focused/checkpoints
 
 # SSH into host
 ssh -i ~/.ssh/id_ed25519-lambda ubuntu@129.213.25.170
