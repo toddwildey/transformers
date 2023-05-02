@@ -91,6 +91,7 @@ export LAST_CHECKPOINT_ON_HOST=$(
 ssh -i ~/.ssh/id_ed25519-lambda ubuntu@$TRANSFORMERS_HOST_NAME \
         "cd \$HOME/models/gpt2-large_infinity/focused/checkpoints && tar -czvf $LAST_CHECKPOINT_ON_HOST.tar.gz $LAST_CHECKPOINT_ON_HOST"
 
+export LAST_CHECKPOINT_ON_HOST="checkpoint-14332000"
 scp -i ~/.ssh/id_ed25519-lambda \
     ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/$LAST_CHECKPOINT_ON_HOST.tar.gz \
     ../models/gpt2-large_infinity/focused/checkpoints
@@ -108,15 +109,18 @@ scp -i ~/.ssh/id_ed25519-lambda \
 
 # Download previously tarred model
 TRANSFORMERS_HOST_NAME="129.213.25.170"
-LAST_CHECKPOINT_ON_HOST="checkpoint-3376000"
+LAST_CHECKPOINT_ON_HOST="checkpoint-7898000"
 scp -i ~/.ssh/id_ed25519-lambda \
     ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/$LAST_CHECKPOINT_ON_HOST.tar.gz \
     ../models/gpt2-large_infinity/focused/checkpoints
 
-# Extract tarred model
-cd $HOME/models/gpt2-large_infinity/focused/checkpoints/
-tar -xzvf checkpoint-3376000.tar.gz
+# Extract tarred model on desktop
+cd ../models/gpt2-large_infinity/focused/checkpoints/
+tar -xzvf checkpoint-14882000.tar.gz
 
+# Extract tarred model on host
+cd $HOME/models/gpt2-large_infinity/focused/checkpoints/
+tar -xzvf checkpoint-7898000.tar.gz
 
 # Watch tar status for file
 cd $HOME/models/gpt2-large_infinity/focused/checkpoints
