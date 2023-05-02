@@ -8,11 +8,17 @@
 ./train_gpt2_infinity.sh gpt2-xl
 
 
+# Dataset tests
+source .env/bin/activate
+python examples/pytorch/language-modeling/sequential_iterable_dataset_test.py
+accelerate launch examples/pytorch/language-modeling/sequential_iterable_dataset_test.py
+accelerate launch --num_processes=2 examples/pytorch/language-modeling/sequential_iterable_dataset_test.py
+
 # Bootstrap host
 TRANSFORMERS_HOST_NAME="129.213.25.170"
 ./bootstrap_host.sh $TRANSFORMERS_HOST_NAME ubuntu ~/.ssh/id_ed25519-lambda "gpt2_infinity"
 
-TRANSFORMERS_HOST_NAME="150.230.35.49"
+TRANSFORMERS_HOST_NAME="192.9.243.187"
 ./bootstrap_host.sh $TRANSFORMERS_HOST_NAME ubuntu ~/.ssh/id_ed25519-lambda "gpt2_infinity"
 
 
@@ -20,7 +26,7 @@ TRANSFORMERS_HOST_NAME="150.230.35.49"
 TRANSFORMERS_HOST_NAME="129.213.25.170"
 mosh --ssh="ssh -i ~/.ssh/id_ed25519-lambda" ubuntu@$TRANSFORMERS_HOST_NAME
 
-TRANSFORMERS_HOST_NAME="150.230.35.49"
+TRANSFORMERS_HOST_NAME="192.9.243.187"
 mosh --ssh="ssh -i ~/.ssh/id_ed25519-lambda" ubuntu@$TRANSFORMERS_HOST_NAME
 
 
@@ -64,7 +70,7 @@ scp -i ~/.ssh/id_ed25519-lambda ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/tran
 
 
 # Copy Lambda Labs SSH key to host
-TRANSFORMERS_HOST_NAME="150.230.35.49"
+TRANSFORMERS_HOST_NAME="192.9.243.187"
 scp -i ~/.ssh/id_ed25519-lambda ~/.ssh/id_ed25519-lambda "ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/.ssh"
 
 
@@ -96,21 +102,20 @@ ssh -i ~/.ssh/id_ed25519-lambda ubuntu@$TRANSFORMERS_HOST_NAME \
                 $LAST_CHECKPOINT_ON_HOST/*.json \
                 $LAST_CHECKPOINT_ON_HOST/pytorch_model.bin"
 
-
 scp -i ~/.ssh/id_ed25519-lambda \
     ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/$LAST_CHECKPOINT_ON_HOST.tar.gz \
     ../models/gpt2-large_infinity/focused/checkpoints
 
 # Download previously tarred model
 TRANSFORMERS_HOST_NAME="129.213.25.170"
-LAST_CHECKPOINT_ON_HOST="checkpoint-1746000"
+LAST_CHECKPOINT_ON_HOST="checkpoint-3376000"
 scp -i ~/.ssh/id_ed25519-lambda \
     ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/$LAST_CHECKPOINT_ON_HOST.tar.gz \
     ../models/gpt2-large_infinity/focused/checkpoints
 
 # Extract tarred model
 cd $HOME/models/gpt2-large_infinity/focused/checkpoints/
-tar -xzvf checkpoint-1746000.tar.gz
+tar -xzvf checkpoint-3376000.tar.gz
 
 
 # Watch tar status for file

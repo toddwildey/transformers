@@ -1628,14 +1628,6 @@ class Trainer:
 
             step = -1
             for step, inputs in enumerate(epoch_iterator):
-                current_example_idx = inputs['example_idx'][0]
-                del inputs['example_idx']
-
-                if current_example_idx != last_example_idx:
-                    model.reset()
-
-                last_example_idx = current_example_idx
-
                 # Skip past any already trained steps if resuming training
                 if steps_trained_in_current_epoch > 0:
                     steps_trained_in_current_epoch -= 1
@@ -1647,6 +1639,14 @@ class Trainer:
                 elif steps_trained_progress_bar is not None:
                     steps_trained_progress_bar.close()
                     steps_trained_progress_bar = None
+
+                current_example_idx = inputs['example_idx'][0]
+                del inputs['example_idx']
+
+                if current_example_idx != last_example_idx:
+                    model.reset()
+
+                last_example_idx = current_example_idx
 
                 if step % args.gradient_accumulation_steps == 0:
                     self.control = self.callback_handler.on_step_begin(args, self.state, self.control)

@@ -252,7 +252,7 @@ class LongTermAttention(nn.Module):
 
         B = torch.matmul(x, G) # [B,e,N]
         B = B.permute(0,2,1) # [B,N,e]
-        
+
         return B
 
     def reset_inf(self):
