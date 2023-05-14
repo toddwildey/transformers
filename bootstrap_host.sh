@@ -9,6 +9,8 @@ REMOTE_BRANCH_NAME="$4"
 
 REMOTE_HOME_PATH="/home/$REMOTE_USER"
 
+ssh-keygen -F "$REMOTE_HOST" || ssh-keyscan "$REMOTE_HOST" >> ~/.ssh/known_hosts
+
 find "$SCRIPT_DIR/bootstrap_host/" -mindepth 1 -maxdepth 1 \
     | xargs -I{} scp -r -i "$REMOTE_IDENTITY_FILE" "{}" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_HOME_PATH"
 scp -i "$REMOTE_IDENTITY_FILE" ~/.ssh/id_ed25519-github-remote "$REMOTE_USER@$REMOTE_HOST:$REMOTE_HOME_PATH/.ssh"
