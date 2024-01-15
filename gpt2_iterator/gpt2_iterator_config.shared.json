@@ -1,0 +1,9 @@
+{
+  "_name_or_path": "gpt2_iterator",
+  "architectures": [
+    "GPT2IteratorLMHeadModel"
+  ],
+  "model_type": "gpt2_iterator",
+  "output_past": true,
+  "summary_activation": null
+}

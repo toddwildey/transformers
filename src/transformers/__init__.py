@@ -468,6 +468,11 @@ _import_structure = {
         "GPT2Config",
         "GPT2Tokenizer",
     ],
+    "models.gpt2_iterator": [
+        "GPT2_PRETRAINED_CONFIG_ARCHIVE_MAP",
+        "GPT2Config",
+        "GPT2Tokenizer",
+    ],
     "models.gpt_bigcode": [
         "GPT_BIGCODE_PRETRAINED_CONFIG_ARCHIVE_MAP",
         "GPTBigCodeConfig",
@@ -1177,6 +1182,7 @@ else:
     _import_structure["models.fnet"].append("FNetTokenizerFast")
     _import_structure["models.funnel"].append("FunnelTokenizerFast")
     _import_structure["models.gpt2"].append("GPT2TokenizerFast")
+    _import_structure["models.gpt2_iterator"].append("GPT2TokenizerFast")
     _import_structure["models.gpt_neox"].append("GPTNeoXTokenizerFast")
     _import_structure["models.gpt_neox_japanese"].append("GPTNeoXJapaneseTokenizer")
     _import_structure["models.herbert"].append("HerbertTokenizerFast")
@@ -2269,6 +2275,17 @@ else:
             "GPT2Model",
             "GPT2PreTrainedModel",
             "load_tf_weights_in_gpt2",
+        ]
+    )
+    _import_structure["models.gpt2_iterator"].extend(
+        [
+            "GPT2IteratorDoubleHeadsModel",
+            "GPT2IteratorForQuestionAnswering",
+            "GPT2IteratorForSequenceClassification",
+            "GPT2IteratorForTokenClassification",
+            "GPT2IteratorLMHeadModel",
+            "GPT2IteratorModel",
+            "GPT2IteratorPreTrainedModel"
         ]
     )
     _import_structure["models.gpt_bigcode"].extend(
@@ -6871,6 +6888,15 @@ if TYPE_CHECKING:
             GPT2Model,
             GPT2PreTrainedModel,
             load_tf_weights_in_gpt2,
+        )
+        from .models.gpt2_iterator import (
+            GPT2IteratorDoubleHeadsModel,
+            GPT2IteratorForQuestionAnswering,
+            GPT2IteratorForSequenceClassification,
+            GPT2IteratorForTokenClassification,
+            GPT2IteratorLMHeadModel,
+            GPT2IteratorModel,
+            GPT2IteratorPreTrainedModel
         )
         from .models.gpt_bigcode import (
             GPT_BIGCODE_PRETRAINED_MODEL_ARCHIVE_LIST,
