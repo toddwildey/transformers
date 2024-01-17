@@ -469,8 +469,8 @@ _import_structure = {
         "GPT2Tokenizer",
     ],
     "models.gpt2_iterator": [
-        "GPT2_PRETRAINED_CONFIG_ARCHIVE_MAP",
-        "GPT2Config",
+        "GPT2_ITERATOR_PRETRAINED_CONFIG_ARCHIVE_MAP",
+        "GPT2IteratorConfig",
         "GPT2Tokenizer",
     ],
     "models.gpt_bigcode": [
@@ -2279,12 +2279,13 @@ else:
     )
     _import_structure["models.gpt2_iterator"].extend(
         [
-            "GPT2IteratorDoubleHeadsModel",
-            "GPT2IteratorForQuestionAnswering",
-            "GPT2IteratorForSequenceClassification",
-            "GPT2IteratorForTokenClassification",
+            # TODO - enable these someday
+            # "GPT2IteratorDoubleHeadsModel",
+            # "GPT2IteratorForQuestionAnswering",
+            # "GPT2IteratorForSequenceClassification",
+            # "GPT2IteratorForTokenClassification",
             "GPT2IteratorLMHeadModel",
-            "GPT2IteratorModel",
+            # "GPT2IteratorModel",
             "GPT2IteratorPreTrainedModel"
         ]
     )
@@ -6890,12 +6891,13 @@ if TYPE_CHECKING:
             load_tf_weights_in_gpt2,
         )
         from .models.gpt2_iterator import (
-            GPT2IteratorDoubleHeadsModel,
-            GPT2IteratorForQuestionAnswering,
-            GPT2IteratorForSequenceClassification,
-            GPT2IteratorForTokenClassification,
+            # TODO - enable these someday
+            # GPT2IteratorDoubleHeadsModel,
+            # GPT2IteratorForQuestionAnswering,
+            # GPT2IteratorForSequenceClassification,
+            # GPT2IteratorForTokenClassification,
             GPT2IteratorLMHeadModel,
-            GPT2IteratorModel,
+            # GPT2IteratorModel,
             GPT2IteratorPreTrainedModel
         )
         from .models.gpt_bigcode import (

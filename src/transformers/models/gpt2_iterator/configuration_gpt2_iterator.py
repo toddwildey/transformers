@@ -25,16 +25,14 @@ from ...utils import logging
 
 logger = logging.get_logger(__name__)
 
-GPT2_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    "gpt2": "https://huggingface.co/gpt2/resolve/main/config.json",
-    "gpt2-medium": "https://huggingface.co/gpt2-medium/resolve/main/config.json",
-    "gpt2-large": "https://huggingface.co/gpt2-large/resolve/main/config.json",
-    "gpt2-xl": "https://huggingface.co/gpt2-xl/resolve/main/config.json",
-    "distilgpt2": "https://huggingface.co/distilgpt2/resolve/main/config.json",
+GPT2_ITERATOR_PRETRAINED_CONFIG_ARCHIVE_MAP = {
+    "gpt2_iterator": "https://huggingface.co/gpt2_iterator/resolve/main/config.json",
+    "gpt2-medium_iterator": "https://huggingface.co/gpt2-medium_iterator/resolve/main/config.json",
+    "gpt2-large_iterator": "https://huggingface.co/gpt2-large_iterator/resolve/main/config.json",
+    "gpt2-xl_iterator": "https://huggingface.co/gpt2-xl_iterator/resolve/main/config.json"
 }
 
-
-class GPT2Config(PretrainedConfig):
+class GPT2IteratorConfig(PretrainedConfig):
     """
     This is the configuration class to store the configuration of a [`GPT2Model`] or a [`TFGPT2Model`]. It is used to
     instantiate a GPT-2 model according to the specified arguments, defining the model architecture. Instantiating a
@@ -196,7 +194,7 @@ class GPT2Config(PretrainedConfig):
         super().__init__(bos_token_id=bos_token_id, eos_token_id=eos_token_id, **kwargs)
 
 
-class GPT2OnnxConfig(OnnxConfigWithPast):
+class GPT2IteratorOnnxConfig(OnnxConfigWithPast):
     def __init__(
         self,
         config: PretrainedConfig,

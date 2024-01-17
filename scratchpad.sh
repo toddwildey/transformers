@@ -10,10 +10,12 @@ git diff "$(git merge-base gpt2_infinity main)" gpt2_infinity -- infinite_memory
 ./train_gpt2_iterator.sh gpt2
 
 # Train GPT2-Large Iterator
-./train_gpt2_iterator.sh gpt2-large
+./train_gpt2_iterator.sh gpt2-large | tee output
 
 # Train GPT2-XL Iterator
 ./train_gpt2_iterator.sh gpt2-xl
+
+cp output "output.$(date +"%Y-%m-%d-%H:%M:%S")"
 
 
 # Dataset tests

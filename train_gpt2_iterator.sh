@@ -25,6 +25,6 @@ OUTPUT_DIR="../models/${MODEL_BASE_NAME}_iterator/focused/checkpoints"
         --save_steps=1000 \
         --save_total_limit=2 \
         --block_size=512 \
-        --output_dir="$OUTPUT_DIR"
+        --output_dir="$OUTPUT_DIR" \
         2>&1
 # done

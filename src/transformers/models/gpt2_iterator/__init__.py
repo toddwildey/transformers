@@ -23,7 +23,7 @@ from ...utils import (
 
 
 _import_structure = {
-    "configuration_gpt2_iterator": ["GPT2_PRETRAINED_CONFIG_ARCHIVE_MAP", "GPT2Config", "GPT2OnnxConfig"],
+    "configuration_gpt2_iterator": ["GPT2_ITERATOR_PRETRAINED_CONFIG_ARCHIVE_MAP", "GPT2IteratorConfig", "GPT2IteratorOnnxConfig"],
     "tokenization_gpt2_iterator": ["GPT2Tokenizer"],
 }
 
@@ -42,19 +42,18 @@ except OptionalDependencyNotAvailable:
     pass
 else:
     _import_structure["modeling_gpt2_iterator"] = [
-        "GPT2_PRETRAINED_MODEL_ARCHIVE_LIST",
-        "GPT2IteratorDoubleHeadsModel",
-        "GPT2IteratorForQuestionAnswering",
-        "GPT2IteratorForSequenceClassification",
-        "GPT2IteratorForTokenClassification",
+        "GPT2_ITERATOR_PRETRAINED_CONFIG_ARCHIVE_MAP",
+        # "GPT2IteratorDoubleHeadsModel",
+        # "GPT2IteratorForQuestionAnswering",
+        # "GPT2IteratorForSequenceClassification",
+        # "GPT2IteratorForTokenClassification",
         "GPT2IteratorLMHeadModel",
-        "GPT2IteratorModel",
-        "GPT2IteratorPreTrainedModel",
-        "load_tf_weights_in_gpt2",
+        # "GPT2IteratorModel",
+        "GPT2IteratorPreTrainedModel"
     ]
 
 if TYPE_CHECKING:
-    from ..gpt2.configuration_gpt2 import GPT2_PRETRAINED_CONFIG_ARCHIVE_MAP, GPT2Config, GPT2OnnxConfig
+    from .configuration_gpt2_iterator import GPT2_ITERATOR_PRETRAINED_CONFIG_ARCHIVE_MAP, GPT2IteratorConfig, GPT2IteratorOnnxConfig
     from ..gpt2.tokenization_gpt2 import GPT2Tokenizer
 
     try:
@@ -72,15 +71,14 @@ if TYPE_CHECKING:
         pass
     else:
         from .modeling_gpt2_iterator import (
-            GPT2_PRETRAINED_MODEL_ARCHIVE_LIST,
-            GPT2IteratorDoubleHeadsModel,
-            GPT2IteratorForQuestionAnswering,
-            GPT2IteratorForSequenceClassification,
-            GPT2IteratorForTokenClassification,
+            GPT2_ITERATOR_PRETRAINED_CONFIG_ARCHIVE_MAP,
+            # GPT2IteratorDoubleHeadsModel,
+            # GPT2IteratorForQuestionAnswering,
+            # GPT2IteratorForSequenceClassification,
+            # GPT2IteratorForTokenClassification,
             GPT2IteratorLMHeadModel,
-            GPT2IteratorModel,
+            # GPT2IteratorModel,
             GPT2IteratorPreTrainedModel,
-            load_tf_weights_in_gpt2,
         )
 
 else:

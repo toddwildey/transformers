@@ -769,7 +769,8 @@ MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING_NAMES = OrderedDict(
         ("funnel", "FunnelForSequenceClassification"),
         ("gpt-sw3", "GPT2ForSequenceClassification"),
         ("gpt2", "GPT2ForSequenceClassification"),
-        ("gpt2_iterator", "GPT2IteratorForSequenceClassification"),
+        # TODO - enable someday
+        # ("gpt2_iterator", "GPT2IteratorForSequenceClassification"),
         ("gpt_bigcode", "GPTBigCodeForSequenceClassification"),
         ("gpt_neo", "GPTNeoForSequenceClassification"),
         ("gpt_neox", "GPTNeoXForSequenceClassification"),
@@ -851,7 +852,8 @@ MODEL_FOR_QUESTION_ANSWERING_MAPPING_NAMES = OrderedDict(
         ("fnet", "FNetForQuestionAnswering"),
         ("funnel", "FunnelForQuestionAnswering"),
         ("gpt2", "GPT2ForQuestionAnswering"),
-        ("gpt2_iterator", "GPT2IteratorForQuestionAnswering"),
+        # TODO - enable someday
+        # ("gpt2_iterator", "GPT2IteratorForQuestionAnswering"),
         ("gpt_neo", "GPTNeoForQuestionAnswering"),
         ("gpt_neox", "GPTNeoXForQuestionAnswering"),
         ("gptj", "GPTJForQuestionAnswering"),
@@ -945,7 +947,8 @@ MODEL_FOR_TOKEN_CLASSIFICATION_MAPPING_NAMES = OrderedDict(
         ("funnel", "FunnelForTokenClassification"),
         ("gpt-sw3", "GPT2ForTokenClassification"),
         ("gpt2", "GPT2ForTokenClassification"),
-        ("gpt2_iterator", "GPT2IteratorForTokenClassification"),
+        # TODO - enable someday
+        # ("gpt2_iterator", "GPT2IteratorForTokenClassification"),
         ("gpt_bigcode", "GPTBigCodeForTokenClassification"),
         ("gpt_neo", "GPTNeoForTokenClassification"),
         ("gpt_neox", "GPTNeoXForTokenClassification"),
