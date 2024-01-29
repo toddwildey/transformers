@@ -34,8 +34,8 @@ source .env/bin/activate
 
 python examples/pytorch/vector-estimation/run_ve_no_trainer.py \
     --dataset_name "../data/gpt2-large/wikimedia/wikipedia/20231101.en" \
-    --output_dir "../models/gpt2-large_iterator/" \
-    --resume_from_checkpoint "../models/gpt2-large_iterator/" \
+    --output_dir "../models/gpt2-large_iterator-linear/" \
+    --resume_from_checkpoint "../models/gpt2-large_iterator-linear/" \
     --checkpointing_steps 100000 \
     2>&1 | tee output
 ```

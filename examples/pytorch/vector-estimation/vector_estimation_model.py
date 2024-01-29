@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from torch import nn
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
+CROSS_ENTROPY_LOSS = nn.CrossEntropyLoss()
+
 @dataclass
 class VectorEstimationModelOutput:
     """
@@ -19,13 +21,17 @@ class VectorEstimationModelOutput:
     loss: Optional[torch.FloatTensor] = None
     logits: torch.FloatTensor = None
 
-CROSS_ENTROPY_LOSS = nn.CrossEntropyLoss()
-
 class LinearVectorEstimationModel(nn.Module):
     def __init__(self, n_embd):
         super().__init__()
         self.iterator_1 = nn.Linear(n_embd, n_embd, bias = False)
         self.iterator_2 = nn.Linear(n_embd, n_embd, bias = False)
+
+    def init_weights(self):
+        self.iterator_1.weight.data.fill_(0.0)
+        self.iterator_1.weight.data.fill_diagonal_(0.5)
+        self.iterator_2.weight.data.fill_(0.0)
+        self.iterator_2.weight.data.fill_diagonal_(0.5)
 
     def forward(
         self,
@@ -33,15 +39,6 @@ class LinearVectorEstimationModel(nn.Module):
         target_feature_vector: Optional[torch.Tensor] = None,
         **kwargs
     ) -> Union[VectorEstimationModelOutput, None]:
-        # print('input_feature_vectors')
-        # print(input_feature_vectors)
-        # print('target_feature_vector')
-        # print(target_feature_vector)
-        # print('input_feature_vectors.size()')
-        # print(input_feature_vectors.size())
-        # print('target_feature_vector.size()')
-        # print(target_feature_vector.size())
-
         if input_feature_vectors.nelement() == 0:
             return None
 
@@ -50,26 +47,10 @@ class LinearVectorEstimationModel(nn.Module):
 
         iterator_outputs = iterator_outputs_1 + iterator_outputs_2
 
-        # print('iterator_outputs')
-        # print(iterator_outputs)
-        # print('iterator_outputs.size()')
-        # print(iterator_outputs.size())
-
-        # print('lm_logits')
-        # print(lm_logits)
-        # print('lm_logits.size()')
-        # print(lm_logits.size())
-
         # We rely on accelerate to move target_feature_vector to the correct device beforehand
         loss = CROSS_ENTROPY_LOSS(iterator_outputs, target_feature_vector)
-
-        # print('loss')
-        # print(loss)
-        # print('loss.size()')
-        # print(loss.size())
 
         return VectorEstimationModelOutput(
             loss = loss,
             logits = iterator_outputs,
         )
-

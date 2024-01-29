@@ -407,46 +407,56 @@ def main(model):
     total_batch_size = args.per_device_train_batch_size * accelerator.num_processes * args.gradient_accumulation_steps
 
     logger.info("***** Running training *****")
-    logger.info(f"  Num examples = {len(train_dataset)}")
+    logger.info(f"  Num training examples = {len(train_dataset)}")
     logger.info(f"  Num Epochs = {args.num_train_epochs}")
     logger.info(f"  Instantaneous batch size per device = {args.per_device_train_batch_size}")
     logger.info(f"  Total train batch size (w. parallel, distributed & accumulation) = {total_batch_size}")
     logger.info(f"  Gradient Accumulation steps = {args.gradient_accumulation_steps}")
     logger.info(f"  Total optimization steps = {args.max_train_steps}")
+    logger.info(f"  Num eval examples = {len(eval_dataset)}")
 
+    resume_step = 0
     completed_steps = 0
     starting_epoch = 0
 
     # Potentially load in the weights and states from a previous save
     if args.resume_from_checkpoint is not None or args.resume_from_checkpoint != "":
-        # Get the most recent checkpoint
-        dirs = [ f.path for f in os.scandir(args.resume_from_checkpoint) if f.is_dir()]
-        dirs.sort(key = os.path.getctime)
-        path = dirs[-1]  # Sorts folders by date modified, most recent checkpoint is the last
-        checkpoint_path = path
-        path = os.path.basename(checkpoint_path)
+        checkpoint_path = None
+        if os.path.isdir(args.resume_from_checkpoint):
+            # Get the most recent checkpoint
+            dirs = [ f.path for f in os.scandir(args.resume_from_checkpoint) if f.is_dir()]
+            dirs.sort(key = os.path.getctime)
+            checkpoint_path = dirs[-1]  # Sorts folders by date modified, most recent checkpoint is the last
 
-        accelerator.print(f"Resumed from checkpoint: {checkpoint_path}", flush = True)
-        accelerator.load_state(checkpoint_path)
-        # Extract `epoch_{i}` or `step_{i}`
-        training_difference = os.path.splitext(path)[0]
+        if checkpoint_path is not None:
+            accelerator.print(f"Resumed from checkpoint: {checkpoint_path}", flush = True)
+            accelerator.load_state(checkpoint_path)
 
-        if "epoch" in training_difference:
-            starting_epoch = int(training_difference.replace("epoch_", "")) + 1
-            resume_step = None
-            completed_steps = starting_epoch * num_update_steps_per_epoch
-        else:
-            # need to multiply `gradient_accumulation_steps` to reflect real steps
-            resume_step = int(training_difference.replace("step_", "")) * args.gradient_accumulation_steps
-            starting_epoch = resume_step // len(train_dataloader)
-            completed_steps = resume_step // args.gradient_accumulation_steps
-            resume_step -= starting_epoch * len(train_dataloader)
+            # Extract `epoch_{i}` or `step_{i}`
+            checkpoint_name = os.path.basename(checkpoint_path)
+            training_difference = os.path.splitext(checkpoint_name)[0]
+            if "epoch" in training_difference:
+                starting_epoch = int(training_difference.replace("epoch_", "")) + 1
+                resume_step = None
+                completed_steps = starting_epoch * num_update_steps_per_epoch
+            elif "step" in training_difference:
+                # need to multiply `gradient_accumulation_steps` to reflect real steps
+                resume_step = int(training_difference.replace("step_", "")) * args.gradient_accumulation_steps
+                starting_epoch = resume_step // len(train_dataloader)
+                completed_steps = resume_step // args.gradient_accumulation_steps
+                resume_step -= starting_epoch * len(train_dataloader)
+
+    # Are we training a new version of the model?
+    if completed_steps == 0 and starting_epoch == 0:
+        model.init_weights()
 
     # Only show the progress bar once on each machine.
     progress_bar = tqdm(range(args.max_train_steps), disable=not accelerator.is_local_main_process)
 
     # update the progress_bar if load from checkpoint
     progress_bar.update(completed_steps)
+
+    perplexity = None
 
     for epoch in range(starting_epoch, args.num_train_epochs):
         model.train()
@@ -463,17 +473,15 @@ def main(model):
         for step, batch in enumerate(active_dataloader):
             with accelerator.accumulate(model):
                 outputs = model(**batch)
-                if outputs is None:
-                    continue
-
-                loss = outputs.loss
-                # We keep track of the loss at each epoch
-                if args.with_tracking:
-                    total_loss += loss.detach().float()
-                accelerator.backward(loss)
-                optimizer.step()
-                lr_scheduler.step()
-                optimizer.zero_grad()
+                if outputs is not None:
+                    loss = outputs.loss
+                    # We keep track of the loss at each epoch
+                    if args.with_tracking:
+                        total_loss += loss.detach().float()
+                    accelerator.backward(loss)
+                    optimizer.step()
+                    lr_scheduler.step()
+                    optimizer.zero_grad()
 
             # Checks if the accelerator has performed an optimization step behind the scenes
             if accelerator.sync_gradients:
@@ -491,12 +499,17 @@ def main(model):
             if completed_steps >= args.max_train_steps:
                 break
 
+        logger.info(f"Evaluating model for epoch {epoch}")
+
         model.eval()
 
         losses = []
         for step, batch in enumerate(eval_dataloader):
             with torch.no_grad():
                 outputs = model(**batch)
+
+            if outputs is None:
+                continue
 
             loss = outputs.loss
             losses.append(accelerator.gather_for_metrics(loss.repeat(args.per_device_eval_batch_size)))
@@ -519,31 +532,30 @@ def main(model):
                     "epoch": epoch,
                     "step": completed_steps,
                 },
-                step=completed_steps,
+                step = completed_steps,
             )
 
-        if args.checkpointing_steps == "epoch":
-            output_dir = f"epoch_{epoch}"
-            if args.output_dir is not None:
-                output_dir = os.path.join(args.output_dir, output_dir)
+        output_dir = f"epoch_{epoch}"
+        if args.output_dir is not None:
+            output_dir = os.path.join(args.output_dir, output_dir)
 
-            accelerator.save_state(output_dir)
+        accelerator.save_state(output_dir)
 
     if args.with_tracking:
         accelerator.end_training()
 
     if args.output_dir is not None:
         accelerator.wait_for_everyone()
-        unwrapped_model = accelerator.unwrap_model(model)
-        unwrapped_model.save_pretrained(
-            args.output_dir,
-            is_main_process = accelerator.is_main_process,
-            save_function = accelerator.save
-        )
+        # unwrapped_model = accelerator.unwrap_model(model)
+        # unwrapped_model.save_pretrained(
+        #     args.output_dir,
+        #     is_main_process = accelerator.is_main_process,
+        #     save_function = accelerator.save
+        # )
 
         if accelerator.is_main_process:
             with open(os.path.join(args.output_dir, "all_results.json"), "w") as f:
-                json.dump({"perplexity": perplexity}, f)
+                json.dump({ "perplexity": perplexity }, f)
 
 from vector_estimation_model import LinearVectorEstimationModel
 
