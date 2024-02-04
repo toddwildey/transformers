@@ -275,6 +275,32 @@ def vector_estimation_data_collator(features: List[InputDataClass], return_tenso
 
     return None
 
+def eval_model(accelerator, model, eval_dataloader, per_device_eval_batch_size):
+    model.eval()
+
+    losses = []
+    for step, batch in enumerate(eval_dataloader):
+        with torch.no_grad():
+            outputs = model(**batch)
+
+        if outputs is None:
+            continue
+
+        loss = outputs.loss
+        losses.append(accelerator.gather_for_metrics(loss.repeat(per_device_eval_batch_size)))
+
+    losses = torch.cat(losses)
+    try:
+        eval_loss = torch.mean(losses)
+        perplexity = math.exp(eval_loss)
+    except OverflowError:
+        perplexity = float("inf")
+
+    return {
+        'eval_loss': eval_loss,
+        'perplexity': perplexity
+    }
+
 def main(model):
     args = parse_args()
 
@@ -345,6 +371,11 @@ def main(model):
         batch_size = args.per_device_eval_batch_size
     )
 
+    # Output model parameters for informational purposes
+    for n, p in model.named_parameters():
+        print('model.named_parameter')
+        print(n)
+
     # Optimizer
     # Split weights in two groups, one with weight decay and the other not.
     no_decay = ["bias", "layer_norm.weight"]
@@ -358,7 +389,10 @@ def main(model):
             "weight_decay": 0.0,
         },
     ]
-    optimizer = torch.optim.AdamW(optimizer_grouped_parameters, lr=args.learning_rate)
+
+    # Using SGD with torch.nn.Linear
+    # optimizer = torch.optim.SGD(optimizer_grouped_parameters, lr = args.learning_rate)
+    optimizer = torch.optim.AdamW(optimizer_grouped_parameters, lr = args.learning_rate)
 
     # Scheduler and math around the number of training steps.
     overrode_max_train_steps = False
@@ -426,7 +460,9 @@ def main(model):
             # Get the most recent checkpoint
             dirs = [ f.path for f in os.scandir(args.resume_from_checkpoint) if f.is_dir()]
             dirs.sort(key = os.path.getctime)
-            checkpoint_path = dirs[-1]  # Sorts folders by date modified, most recent checkpoint is the last
+            # Sorts folders by date modified, most recent checkpoint is the last
+            if len(dirs) > 0:
+                checkpoint_path = dirs[-1]
 
         if checkpoint_path is not None:
             accelerator.print(f"Resumed from checkpoint: {checkpoint_path}", flush = True)
@@ -501,25 +537,9 @@ def main(model):
 
         logger.info(f"Evaluating model for epoch {epoch}")
 
-        model.eval()
-
-        losses = []
-        for step, batch in enumerate(eval_dataloader):
-            with torch.no_grad():
-                outputs = model(**batch)
-
-            if outputs is None:
-                continue
-
-            loss = outputs.loss
-            losses.append(accelerator.gather_for_metrics(loss.repeat(args.per_device_eval_batch_size)))
-
-        losses = torch.cat(losses)
-        try:
-            eval_loss = torch.mean(losses)
-            perplexity = math.exp(eval_loss)
-        except OverflowError:
-            perplexity = float("inf")
+        model_eval_info = eval_model(accelerator, model, eval_dataloader, args.per_device_eval_batch_size)
+        eval_loss = model_eval_info['eval_loss']
+        perplexity = model_eval_info['perplexity']
 
         logger.info(f"epoch {epoch}: perplexity: {perplexity} eval_loss: {eval_loss}")
 
@@ -540,6 +560,13 @@ def main(model):
             output_dir = os.path.join(args.output_dir, output_dir)
 
         accelerator.save_state(output_dir)
+
+    # Evaluate final stte of model
+    model_eval_info = eval_model(accelerator, model, eval_dataloader, args.per_device_eval_batch_size)
+    eval_loss = model_eval_info['eval_loss']
+    perplexity = model_eval_info['perplexity']
+
+    logger.info(f"epoch {epoch}: perplexity: {perplexity} eval_loss: {eval_loss}")
 
     if args.with_tracking:
         accelerator.end_training()
