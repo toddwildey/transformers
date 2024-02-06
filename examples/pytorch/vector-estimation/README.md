@@ -27,7 +27,7 @@ text files for training and validation. We give examples of both below.
 
 The following example trains a model to estimate the feature vector output by GPT-2 for a batch of text using feature vectors output by GPT-2 for subsections of the same text.
 
-To run on your own training and validation files, use the following command:
+To run on your own training and validation files for a linear vector estimation model, use the following command:
 
 ```bash
 source .env/bin/activate
@@ -36,6 +36,19 @@ python examples/pytorch/vector-estimation/run_ve_no_trainer.py \
     --dataset_name "../data/gpt2-large/wikimedia/wikipedia/20231101.en" \
     --output_dir "../models/gpt2-large_iterator-linear/" \
     --resume_from_checkpoint "../models/gpt2-large_iterator-linear/" \
+    --checkpointing_steps 100000 \
+    2>&1 | tee output
+```
+
+To run on your own training and validation files for an LSTM-based vector estimation model, use the following command:
+
+```bash
+source .env/bin/activate
+
+python examples/pytorch/vector-estimation/run_ve_no_trainer.py \
+    --dataset_name "../data/gpt2-large/wikimedia/wikipedia/20231101.en" \
+    --output_dir "../models/gpt2-large_iterator-lstm/" \
+    --resume_from_checkpoint "../models/gpt2-large_iterator-lstm/" \
     --checkpointing_steps 100000 \
     2>&1 | tee output
 ```

@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from torch import nn
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
+from transformers.pytorch_utils import Conv1D
+
 CROSS_ENTROPY_LOSS = nn.CrossEntropyLoss()
 
 @dataclass
@@ -22,10 +24,10 @@ class VectorEstimationModelOutput:
     logits: torch.FloatTensor = None
 
 class LinearVectorEstimationModel(nn.Module):
-    def __init__(self, n_embd):
+    def __init__(self, n_embed):
         super().__init__()
-        self.iterator_1 = nn.Linear(n_embd, n_embd, bias = False)
-        self.iterator_2 = nn.Linear(n_embd, n_embd, bias = False)
+        self.iterator_1 = nn.Linear(n_embed, n_embed, bias = False)
+        self.iterator_2 = nn.Linear(n_embed, n_embed, bias = False)
 
     def init_weights(self):
         self.iterator_1.weight.data.fill_(0.0)
@@ -39,7 +41,7 @@ class LinearVectorEstimationModel(nn.Module):
         target_feature_vector: Optional[torch.Tensor] = None,
         **kwargs
     ) -> Union[VectorEstimationModelOutput, None]:
-        if input_feature_vectors.nelement() == 0:
+        if input_feature_vectors.nelement() == 0 or input_feature_vectors.size(0) < 2:
             return None
 
         iterator_outputs_1 = self.iterator_1(torch.select(input_feature_vectors, 1, 0))
@@ -50,7 +52,166 @@ class LinearVectorEstimationModel(nn.Module):
         # We rely on accelerate to move target_feature_vector to the correct device beforehand
         loss = CROSS_ENTROPY_LOSS(iterator_outputs, target_feature_vector)
 
+        # print('loss')
+        # print(loss)
+
         return VectorEstimationModelOutput(
             loss = loss,
             logits = iterator_outputs,
+        )
+
+class MLP(nn.Module):
+    def __init__(self, n_embed, resid_pdrop = 0.1):
+        super().__init__()
+        self.c_fc = Conv1D(n_embed, n_embed)
+        self.c_proj = Conv1D(n_embed, n_embed)
+        self.act = nn.GELU()
+        self.dropout = nn.Dropout(resid_pdrop)
+
+    def forward(self, hidden_states: Optional[Tuple[torch.FloatTensor]]) -> torch.FloatTensor:
+        hidden_states = self.c_fc(hidden_states)
+        hidden_states = self.act(hidden_states)
+        hidden_states = self.c_proj(hidden_states)
+        hidden_states = self.dropout(hidden_states)
+        return hidden_states
+
+class AttentionVectorEstimationModel(nn.Module):
+    def __init__(self, n_embed, layer_norm_epsilon = 0.00001):
+        super().__init__()
+        self.n_embed = n_embed
+        self.c_attn = Conv1D(3 * n_embed, n_embed)
+        self.ln_1 = nn.LayerNorm(n_embed, eps = layer_norm_epsilon)
+        self.attention = nn.MultiheadAttention(n_embed, 8)
+        self.ln_2 = nn.LayerNorm(n_embed, eps = layer_norm_epsilon)
+        self.mlp = MLP(n_embed)
+
+    def forward(self, input_feature_vectors: Optional[torch.FloatTensor]) -> Tuple[torch.FloatTensor]:
+        residual = input_feature_vectors
+        hidden_states = self.ln_1(input_feature_vectors)
+        query, key, value = self.c_attn(hidden_states).split(self.n_embed, dim = 2)
+        attn_output, attn_output_weights = self.attention(query, key, value)
+        hidden_states = attn_output + residual
+
+        residual = hidden_states
+        hidden_states = self.ln_2(hidden_states)
+        feed_forward_hidden_states = self.mlp(hidden_states)
+        hidden_states = residual + feed_forward_hidden_states
+
+# AttentionVectorEstimationModel does not work - do not use it
+class AttentionVectorEstimationModel(nn.Module):
+    def __init__(self, n_embed, layer_norm_epsilon = 0.00001):
+        super().__init__()
+        self.n_embed = n_embed
+        self.c_attn = Conv1D(3 * n_embed, n_embed)
+        self.ln_1 = nn.LayerNorm(n_embed, eps = layer_norm_epsilon)
+        self.attention = nn.MultiheadAttention(n_embed, 8)
+        self.ln_2 = nn.LayerNorm(n_embed, eps = layer_norm_epsilon)
+        self.mlp = MLP(n_embed)
+
+    def init_weights(self):
+        pass
+
+    def forward(
+        self,
+        input_feature_vectors: Optional[torch.Tensor] = None,
+        target_feature_vector: Optional[torch.Tensor] = None,
+        **kwargs
+    ) -> Union[VectorEstimationModelOutput, None]:
+        if input_feature_vectors.nelement() == 0 or input_feature_vectors.size(0) < 2:
+            return None
+
+        residual = input_feature_vectors
+        hidden_states = self.ln_1(input_feature_vectors)
+        query, key, value = self.c_attn(hidden_states).split(self.n_embed, dim = 2)
+        attn_output, attn_output_weights = self.attention(query, key, value)
+        hidden_states = attn_output + residual
+
+        residual = hidden_states
+        hidden_states = self.ln_2(hidden_states)
+        feed_forward_hidden_states = self.mlp(hidden_states)
+        hidden_states = residual + feed_forward_hidden_states
+
+        print('hidden_states')
+        print(hidden_states)
+        print('hidden_states.size()')
+        print(hidden_states.size())
+
+        # expected_state = torch.select(input_feature_vectors, 1, 0) + torch.select(input_feature_vectors, 1, 1)
+        expected_state = torch.sum(hidden_states, dim = 1)
+
+        # We rely on accelerate to move target_feature_vector to the correct device beforehand
+        loss = CROSS_ENTROPY_LOSS(expected_state, target_feature_vector)
+
+        print('loss')
+        print(loss)
+
+        return VectorEstimationModelOutput(
+            loss = loss,
+            logits = expected_state,
+        )
+
+class LSTMVectorEstimationModel(nn.Module):
+    def __init__(self, n_embed, num_layers = 2, device = None):
+        super().__init__()
+        self.n_embed = n_embed
+        self.attention = [ self.create_lstm(n_embed, device) for idx in range(0, num_layers) ]
+
+    def create_lstm(self, n_embed, device):
+        return nn.LSTM(
+            n_embed,
+            n_embed,
+            device = device,
+            bias = False,
+            batch_first = True
+        )
+
+    def init_weights(self):
+        pass
+
+    def forward(
+        self,
+        input_feature_vectors: Optional[torch.Tensor] = None,
+        target_feature_vector: Optional[torch.Tensor] = None,
+        **kwargs
+    ) -> Union[VectorEstimationModelOutput, None]:
+        if input_feature_vectors.nelement() == 0 or input_feature_vectors.size(0) < 2:
+            return None
+
+        # print('input_feature_vectors')
+        # print(input_feature_vectors)
+        # print('input_feature_vectors.size()')
+        # print(input_feature_vectors.size())
+
+        output = None
+        hidden_states = None
+        for idx in range(0, input_feature_vectors.size(1)):
+            # input_vector = torch.select(input_feature_vectors, 1, idx)
+            input_vector = input_feature_vectors[:, idx:idx+1, :]
+
+            # print('input_vector')
+            # print(input_vector)
+            # print('input_vector.size()')
+            # print(input_vector.size())
+
+            output, hidden_states = self.attention[idx](input_vector, hidden_states)
+
+            # print('output')
+            # print(output)
+            # print('output.size()')
+            # print(output.size())
+
+        # print('target_feature_vector')
+        # print(target_feature_vector)
+        # print('target_feature_vector.size()')
+        # print(target_feature_vector.size())
+
+        # We rely on accelerate to move target_feature_vector to the correct device beforehand
+        loss = CROSS_ENTROPY_LOSS(output[:, 0, :], target_feature_vector)
+
+        print('loss')
+        print(loss)
+
+        return VectorEstimationModelOutput(
+            loss = loss,
+            logits = hidden_states,
         )

@@ -584,10 +584,14 @@ def main(model):
             with open(os.path.join(args.output_dir, "all_results.json"), "w") as f:
                 json.dump({ "perplexity": perplexity }, f)
 
-from vector_estimation_model import LinearVectorEstimationModel
+from vector_estimation_model import \
+    LinearVectorEstimationModel, \
+    AttentionVectorEstimationModel, \
+    LSTMVectorEstimationModel
 
 if __name__ == "__main__":
     # TODO - source this appropriately
     N_EMBD = 1280
-    model = LinearVectorEstimationModel(N_EMBD)
+    NUM_LAYERS = 2
+    model = LSTMVectorEstimationModel(N_EMBD, num_layers = NUM_LAYERS, device = 'cuda:0')
     main(model)
