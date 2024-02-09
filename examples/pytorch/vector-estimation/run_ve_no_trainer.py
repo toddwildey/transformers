@@ -35,6 +35,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import datasets
 import torch
+import wandb
 from accelerate import Accelerator, DistributedType
 from accelerate.logging import get_logger
 from accelerate.utils import set_seed
@@ -304,6 +305,19 @@ def eval_model(accelerator, model, eval_dataloader, per_device_eval_batch_size):
 def main(model):
     args = parse_args()
 
+    # Weights and Biases
+    wandb.init(
+        # set the wandb project where this run will be logged
+        project = "gpt2-large_iterator-lstm",
+        # track hyperparameters and run metadata
+        config = {
+            "learning_rate": args.learning_rate,
+            "architecture": "LSTM",
+            "dataset": args.dataset_name,
+            "epochs": args.num_train_epochs,
+        }
+    )
+
     # Sending telemetry. Tracking the example usage helps us better allocate resources to maintain them. The
     # information sent is the one passed as arguments along with your Python/PyTorch versions.
     send_example_telemetry("run_ve_no_trainer", args)
@@ -519,6 +533,10 @@ def main(model):
                     lr_scheduler.step()
                     optimizer.zero_grad()
 
+                    wandb.log({
+                        "loss": loss
+                    })
+
             # Checks if the accelerator has performed an optimization step behind the scenes
             if accelerator.sync_gradients:
                 progress_bar.update(1)
@@ -570,6 +588,8 @@ def main(model):
 
     if args.with_tracking:
         accelerator.end_training()
+
+    wandb.finish()
 
     if args.output_dir is not None:
         accelerator.wait_for_everyone()

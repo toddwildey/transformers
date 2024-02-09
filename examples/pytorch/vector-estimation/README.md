@@ -30,9 +30,7 @@ The following example trains a model to estimate the feature vector output by GP
 To run on your own training and validation files for a linear vector estimation model, use the following command:
 
 ```bash
-source .env/bin/activate
-
-python examples/pytorch/vector-estimation/run_ve_no_trainer.py \
+./run_python_with_wandb.sh examples/pytorch/vector-estimation/run_ve_no_trainer.py \
     --dataset_name "../data/gpt2-large/wikimedia/wikipedia/20231101.en" \
     --output_dir "../models/gpt2-large_iterator-linear/" \
     --resume_from_checkpoint "../models/gpt2-large_iterator-linear/" \
@@ -43,9 +41,7 @@ python examples/pytorch/vector-estimation/run_ve_no_trainer.py \
 To run on your own training and validation files for an LSTM-based vector estimation model, use the following command:
 
 ```bash
-source .env/bin/activate
-
-python examples/pytorch/vector-estimation/run_ve_no_trainer.py \
+./run_python_with_wandb.sh examples/pytorch/vector-estimation/run_ve_no_trainer.py \
     --dataset_name "../data/gpt2-large/wikimedia/wikipedia/20231101.en" \
     --output_dir "../models/gpt2-large_iterator-lstm/" \
     --resume_from_checkpoint "../models/gpt2-large_iterator-lstm/" \
