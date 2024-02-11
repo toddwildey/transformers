@@ -44,7 +44,7 @@ class LinearVectorEstimationModel(nn.Module):
         target_feature_vector: Optional[torch.Tensor] = None,
         **kwargs
     ) -> Union[VectorEstimationModelOutput, None]:
-        if input_feature_vectors.nelement() == 0 or input_feature_vectors.size(0) < 2:
+        if input_feature_vectors.nelement() == 0 or input_feature_vectors.size(1) < 2:
             return None
 
         iterator_outputs_1 = self.iterator_1(torch.select(input_feature_vectors, 1, 0))
@@ -120,7 +120,7 @@ class AttentionVectorEstimationModel(nn.Module):
         target_feature_vector: Optional[torch.Tensor] = None,
         **kwargs
     ) -> Union[VectorEstimationModelOutput, None]:
-        if input_feature_vectors.nelement() == 0 or input_feature_vectors.size(0) < 2:
+        if input_feature_vectors.nelement() == 0 or input_feature_vectors.size(1) < 2:
             return None
 
         residual = input_feature_vectors
@@ -153,6 +153,7 @@ class AttentionVectorEstimationModel(nn.Module):
             logits = expected_state,
         )
 
+# Loss doesn't go down meaningfully for this model
 class LSTMVectorEstimationModel(nn.Module):
     def __init__(self, n_embed, num_layers = 2, device = None):
         super().__init__()
@@ -177,13 +178,8 @@ class LSTMVectorEstimationModel(nn.Module):
         target_feature_vector: Optional[torch.Tensor] = None,
         **kwargs
     ) -> Union[VectorEstimationModelOutput, None]:
-        if input_feature_vectors.nelement() == 0 or input_feature_vectors.size(0) < 2:
+        if input_feature_vectors.nelement() == 0 or input_feature_vectors.size(1) < 2:
             return None
-
-        # print('input_feature_vectors')
-        # print(input_feature_vectors)
-        # print('input_feature_vectors.size()')
-        # print(input_feature_vectors.size())
 
         output = None
         # hidden_states = None
@@ -245,6 +241,55 @@ class LSTMVectorEstimationModel(nn.Module):
 
         # print('loss')
         # print(loss)
+
+        return VectorEstimationModelOutput(
+            loss = loss,
+            logits = hidden_states,
+        )
+
+# This model does not fit on 4090 GTX
+class InfoMetricVectorEstimationModel(nn.Module):
+    def __init__(self, n_embed, device = None, dtype = None) -> None:
+        factory_kwargs = { 'device': device, 'dtype': dtype }
+        super().__init__()
+        self.n_embed = n_embed
+        self.weight = nn.parameter.Parameter(torch.empty((n_embed, n_embed, n_embed), **factory_kwargs))
+
+    def init_weights(self) -> None:
+        pass
+
+    def forward(
+        self,
+        input_feature_vectors: Optional[torch.Tensor] = None,
+        target_feature_vector: Optional[torch.Tensor] = None,
+        **kwargs
+    ) -> Union[VectorEstimationModelOutput, None]:
+        if input_feature_vectors.nelement() == 0 or input_feature_vectors.size(1) < 2:
+            return None
+
+        outer_product = torch.bmm(
+            input_feature_vectors[:, 0:1, :].transpose(1, 2),
+            input_feature_vectors[:, 1:2, :]
+        )
+
+        outer_product.requires_grad = False
+
+        # print('outer_product')
+        # print(outer_product)
+        # print('outer_product.size()')
+        # print(outer_product.size())
+
+        hidden_states = torch.einsum('bij,oij->bo', outer_product, self.weight)
+
+        # print('hidden_states')
+        # print(hidden_states)
+        # print('hidden_states.size()')
+        # print(hidden_states.size())
+
+        loss = L1_LOSS(hidden_states, target_feature_vector)
+
+        print('loss')
+        print(loss)
 
         return VectorEstimationModelOutput(
             loss = loss,

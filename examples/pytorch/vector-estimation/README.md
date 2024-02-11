@@ -35,6 +35,8 @@ To run on your own training and validation files for a linear vector estimation 
     --output_dir "../models/gpt2-large_iterator-linear/" \
     --resume_from_checkpoint "../models/gpt2-large_iterator-linear/" \
     --checkpointing_steps 100000 \
+    --per_device_train_batch_size 1 \
+    --per_device_eval_batch_size 1 \
     2>&1 | tee output
 ```
 
@@ -43,8 +45,10 @@ To run on your own training and validation files for an LSTM-based vector estima
 ```bash
 ./run_python_with_wandb.sh examples/pytorch/vector-estimation/run_ve_no_trainer.py \
     --dataset_name "../data/gpt2-large/wikimedia/wikipedia/20231101.en" \
-    --output_dir "../models/gpt2-large_iterator-lstm/" \
-    --resume_from_checkpoint "../models/gpt2-large_iterator-lstm/" \
+    --output_dir "../models/gpt2-large_iterator-info_metric/" \
+    --resume_from_checkpoint "../models/gpt2-large_iterator-info_metric/" \
     --checkpointing_steps 100000 \
+    --per_device_train_batch_size 1 \
+    --per_device_eval_batch_size 1 \
     2>&1 | tee output
 ```

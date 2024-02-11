@@ -302,7 +302,7 @@ def eval_model(accelerator, model, eval_dataloader, per_device_eval_batch_size):
         'perplexity': perplexity
     }
 
-def main(model):
+def main(model, **kwargs):
     args = parse_args()
 
     # Weights and Biases
@@ -326,6 +326,9 @@ def main(model):
     # If we're using tracking, we also need to initialize it here and it will by default pick up all supported trackers
     # in the environment
     accelerator_log_kwargs = {}
+
+    if kwargs['device'] == 'cpu':
+        accelerator_log_kwargs['cpu'] = True
 
     if args.with_tracking:
         accelerator_log_kwargs["log_with"] = args.report_to
@@ -607,11 +610,14 @@ def main(model):
 from vector_estimation_model import \
     LinearVectorEstimationModel, \
     AttentionVectorEstimationModel, \
-    LSTMVectorEstimationModel
+    LSTMVectorEstimationModel, \
+    InfoMetricVectorEstimationModel
 
 if __name__ == "__main__":
-    # TODO - source this appropriately
+    # TODO - source these appropriately
+    device = 'cpu'
     N_EMBD = 1280
-    NUM_LAYERS = 2
-    model = LSTMVectorEstimationModel(N_EMBD, num_layers = NUM_LAYERS, device = 'cuda:0')
-    main(model)
+    # NUM_LAYERS = 2
+    # model = LSTMVectorEstimationModel(N_EMBD, num_layers = NUM_LAYERS, device = device)
+    model = InfoMetricVectorEstimationModel(N_EMBD, device = device)
+    main(model, device = device)
