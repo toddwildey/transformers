@@ -550,7 +550,7 @@ def main():
     with training_args.main_process_first(desc="grouping texts together"):
         if not data_args.streaming:
             lm_datasets = tokenized_datasets.map(
-                group_sequential_texts_factory(block_size),
+                group_sequential_texts_factory(block_size, tokenized_datasets.column_names['train']),
                 batched=True,
                 with_indices=True,
                 num_proc=data_args.preprocessing_num_workers,
