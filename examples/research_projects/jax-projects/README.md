@@ -49,7 +49,7 @@ At the end of the community week, each team should submit a demo of their projec
 
 - **23.06.** Official announcement of the community week. Make sure to sign-up in [this google form](https://forms.gle/tVGPhjKXyEsSgUcs8).
 - **23.06. - 30.06.** Participants will be added to an internal Slack channel. Project ideas can be proposed here and groups of 3-5 are formed. Read this document for more information. 
-- **30.06.** Release of all relevant training scripts in JAX/Flax as well as other documents on how to set up a TPU, how to use the training scripts, how to submit a demo, tips & tricks for JAX/Flax, tips & tricks for efficient use of the   hub. 
+- **30.06.** Release of all relevant training scripts in JAX/Flax as well as other documents on how to set up a TPU, how to use the training scripts, how to submit a demo, tips & tricks for JAX/Flax, tips & tricks for efficient use of the hub.
 - **30.06. - 2.07.** Talks about JAX/Flax, TPU, Transformers, Computer Vision & NLP will be held. 
 - **7.07.** Start of the community week! Access to TPUv3-8 will be given to each team.
 - **7.07. - 14.07.** The Hugging Face & JAX/Flax & Cloud team will be available for any questions, problems the teams might run into.
@@ -227,7 +227,7 @@ the forum and making use of the [🤗 hub](http://huggingface.co/) to have a ver
 control for your models and training logs.
 - When debugging, it is important that the debugging cycle is kept as short as possible to 
 be able to effectively debug. *E.g.* if there is a problem with your training script, 
-you should run it with just a couple of hundreds of examples and not the whole dataset script. This can be done by either making use of [datasets streaming](https://huggingface.co/docs/datasets/master/dataset_streaming.html?highlight=streaming) or by selecting just the first 
+you should run it with just a couple of hundreds of examples and not the whole dataset script. This can be done by either making use of [datasets streaming](https://huggingface.co/docs/datasets/master/dataset_streaming?highlight=streaming) or by selecting just the first 
 X number of data samples after loading:
 
 ```python
@@ -710,7 +710,7 @@ class FlaxMLPModel(FlaxMLPPreTrainedModel):
    module_class = FlaxMLPModule
 ```
 
-Now the `FlaxMLPModel` will have a similar interface as PyTorch or Tensorflow models and allows us to attach loaded or randomely initialized weights to the model instance.
+Now the `FlaxMLPModel` will have a similar interface as PyTorch or Tensorflow models and allows us to attach loaded or randomly initialized weights to the model instance.
 
 So the important point to remember is that the `model` is not an instance of `nn.Module`; it's an abstract class, like a container that holds a Flax module, its parameters and provides convenient methods for initialization and forward pass. The key take-away here is that an instance of `FlaxMLPModel` is very much stateful now since it holds all the model parameters, whereas the underlying Flax module `FlaxMLPModule` is still stateless. Now to make `FlaxMLPModel` fully compliant with JAX transformations, it is always possible to pass the parameters to `FlaxMLPModel` as well to make it stateless and easier to work with during training. Feel free to take a look at the code to see how exactly this is implemented for ex. [`modeling_flax_bert.py`](https://github.com/huggingface/transformers/blob/main/src/transformers/models/bert/modeling_flax_bert.py#L536)
 
@@ -1117,7 +1117,7 @@ params = model.init(key2, x)
 
 bytes_output = serialization.to_bytes(params)
 
-repo = Repository("flax-model", clone_from="flax-community/flax-model-dummy", use_auth_token=True)
+repo = Repository("flax-model", clone_from="flax-community/flax-model-dummy", token=True)
 with repo.commit("My cool Flax model :)"):
     with open("flax_model.msgpack", "wb") as f:
         f.write(bytes_output)
@@ -1209,7 +1209,7 @@ All the widgets are open sourced in the `huggingface_hub` [repo](https://github.
 * **Text to Speech**: Convert text to audio.
 
 **Image**
-* **Image Classification:** Given an image, predict its class. [Example](https://huggingface.co/osanseviero/llamastic).
+* **Image Classification:** Given an image, predict its class. [Example](https://huggingface.co/osanseviero/llamastic).
 * ([WIP](https://github.com/huggingface/huggingface_hub/issues/100)) **Zero Shot Image Classification**
 * ([WIP](https://github.com/huggingface/huggingface_hub/issues/112)) **Image Captioning**
 * ([WIP](https://github.com/huggingface/huggingface_hub/issues/113)) **Text to Image Generation**

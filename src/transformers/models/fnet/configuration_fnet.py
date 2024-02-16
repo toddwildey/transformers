@@ -22,7 +22,7 @@ logger = logging.get_logger(__name__)
 
 FNET_PRETRAINED_CONFIG_ARCHIVE_MAP = {
     "google/fnet-base": "https://huggingface.co/google/fnet-base/resolve/main/config.json",
-    "google/fnet-large": "https://huggingface.co/google/fnet-large/resolve/main/config.json"
+    "google/fnet-large": "https://huggingface.co/google/fnet-large/resolve/main/config.json",
     # See all FNet models at https://huggingface.co/models?filter=fnet
 }
 
@@ -73,17 +73,18 @@ class FNetConfig(PretrainedConfig):
     Example:
 
     ```python
-    >>> from transformers import FNetModel, FNetConfig
+    >>> from transformers import FNetConfig, FNetModel
 
     >>> # Initializing a FNet fnet-base style configuration
     >>> configuration = FNetConfig()
 
-    >>> # Initializing a model from the fnet-base style configuration
+    >>> # Initializing a model (with random weights) from the fnet-base style configuration
     >>> model = FNetModel(configuration)
 
     >>> # Accessing the model configuration
     >>> configuration = model.config
     ```"""
+
     model_type = "fnet"
 
     def __init__(
@@ -103,7 +104,7 @@ class FNetConfig(PretrainedConfig):
         pad_token_id=3,
         bos_token_id=1,
         eos_token_id=2,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(pad_token_id=pad_token_id, bos_token_id=bos_token_id, eos_token_id=eos_token_id, **kwargs)
 

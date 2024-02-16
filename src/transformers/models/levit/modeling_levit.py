@@ -16,7 +16,7 @@
 
 import itertools
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import torch
 import torch.utils.checkpoint
@@ -38,7 +38,6 @@ logger = logging.get_logger(__name__)
 
 # General docstring
 _CONFIG_FOR_DOC = "LevitConfig"
-_FEAT_EXTRACTOR_FOR_DOC = "LevitFeatureExtractor"
 
 # Base docstring
 _CHECKPOINT_FOR_DOC = "facebook/levit-128S"
@@ -126,8 +125,14 @@ class LevitPatchEmbeddings(nn.Module):
         self.embedding_layer_4 = LevitConvEmbeddings(
             config.hidden_sizes[0] // 2, config.hidden_sizes[0], config.kernel_size, config.stride, config.padding
         )
+        self.num_channels = config.num_channels
 
     def forward(self, pixel_values):
+        num_channels = pixel_values.shape[1]
+        if num_channels != self.num_channels:
+            raise ValueError(
+                "Make sure that the channel dimension of the pixel values match with the one set in the configuration."
+            )
         embeddings = self.embedding_layer_1(pixel_values)
         embeddings = self.activation_layer_1(embeddings)
         embeddings = self.embedding_layer_2(embeddings)
@@ -190,7 +195,9 @@ class LevitAttention(nn.Module):
 
         self.attention_bias_cache = {}
         self.attention_biases = torch.nn.Parameter(torch.zeros(num_attention_heads, len(attention_offsets)))
-        self.register_buffer("attention_bias_idxs", torch.LongTensor(indices).view(len_points, len_points))
+        self.register_buffer(
+            "attention_bias_idxs", torch.LongTensor(indices).view(len_points, len_points), persistent=False
+        )
 
     @torch.no_grad()
     def train(self, mode=True):
@@ -266,7 +273,9 @@ class LevitAttentionSubsample(nn.Module):
                 indices.append(attention_offsets[offset])
 
         self.attention_biases = torch.nn.Parameter(torch.zeros(num_attention_heads, len(attention_offsets)))
-        self.register_buffer("attention_bias_idxs", torch.LongTensor(indices).view(len_points_, len_points))
+        self.register_buffer(
+            "attention_bias_idxs", torch.LongTensor(indices).view(len_points_, len_points), persistent=False
+        )
 
     @torch.no_grad()
     def train(self, mode=True):
@@ -484,7 +493,6 @@ class LevitPreTrainedModel(PreTrainedModel):
     config_class = LevitConfig
     base_model_prefix = "levit"
     main_input_name = "pixel_values"
-    supports_gradient_checkpointing = True
 
     def _init_weights(self, module):
         """Initialize the weights"""
@@ -497,10 +505,6 @@ class LevitPreTrainedModel(PreTrainedModel):
         elif isinstance(module, (nn.BatchNorm1d, nn.BatchNorm2d)):
             module.bias.data.zero_()
             module.weight.data.fill_(1.0)
-
-    def _set_gradient_checkpointing(self, module, value=False):
-        if isinstance(module, LevitModel):
-            module.gradient_checkpointing = value
 
 
 LEVIT_START_DOCSTRING = r"""
@@ -517,8 +521,8 @@ LEVIT_START_DOCSTRING = r"""
 LEVIT_INPUTS_DOCSTRING = r"""
     Args:
         pixel_values (`torch.FloatTensor` of shape `(batch_size, num_channels, height, width)`):
-            Pixel values. Pixel values can be obtained using [`AutoFeatureExtractor`]. See
-            [`AutoFeatureExtractor.__call__`] for details.
+            Pixel values. Pixel values can be obtained using [`AutoImageProcessor`]. See
+            [`LevitImageProcessor.__call__`] for details.
 
         output_hidden_states (`bool`, *optional*):
             Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors for
@@ -543,7 +547,6 @@ class LevitModel(LevitPreTrainedModel):
 
     @add_start_docstrings_to_model_forward(LEVIT_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
-        processor_class=_FEAT_EXTRACTOR_FOR_DOC,
         checkpoint=_CHECKPOINT_FOR_DOC,
         output_type=BaseModelOutputWithPoolingAndNoAttention,
         config_class=_CONFIG_FOR_DOC,
@@ -555,7 +558,7 @@ class LevitModel(LevitPreTrainedModel):
         pixel_values: torch.FloatTensor = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ):
+    ) -> Union[Tuple, BaseModelOutputWithPoolingAndNoAttention]:
         output_hidden_states = (
             output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
         )
@@ -612,7 +615,6 @@ class LevitForImageClassification(LevitPreTrainedModel):
 
     @add_start_docstrings_to_model_forward(LEVIT_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
-        processor_class=_FEAT_EXTRACTOR_FOR_DOC,
         checkpoint=_IMAGE_CLASS_CHECKPOINT,
         output_type=ImageClassifierOutputWithNoAttention,
         config_class=_CONFIG_FOR_DOC,
@@ -624,7 +626,7 @@ class LevitForImageClassification(LevitPreTrainedModel):
         labels: Optional[torch.LongTensor] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ):
+    ) -> Union[Tuple, ImageClassifierOutputWithNoAttention]:
         r"""
         labels (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
             Labels for computing the image classification/regression loss. Indices should be in `[0, ...,
@@ -705,7 +707,6 @@ class LevitForImageClassificationWithTeacher(LevitPreTrainedModel):
 
     @add_start_docstrings_to_model_forward(LEVIT_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
-        processor_class=_FEAT_EXTRACTOR_FOR_DOC,
         checkpoint=_IMAGE_CLASS_CHECKPOINT,
         output_type=LevitForImageClassificationWithTeacherOutput,
         config_class=_CONFIG_FOR_DOC,
@@ -716,7 +717,7 @@ class LevitForImageClassificationWithTeacher(LevitPreTrainedModel):
         pixel_values: torch.FloatTensor = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ):
+    ) -> Union[Tuple, LevitForImageClassificationWithTeacherOutput]:
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
         outputs = self.levit(pixel_values, output_hidden_states=output_hidden_states, return_dict=return_dict)

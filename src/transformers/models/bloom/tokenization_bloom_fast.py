@@ -15,18 +15,12 @@
 """Tokenization classes for Bloom."""
 
 
-import json
-from typing import TYPE_CHECKING, List, Optional, Tuple
-
-from tokenizers import pre_tokenizers
+import pickle
+from typing import Optional, Tuple
 
 from ...tokenization_utils_base import BatchEncoding
 from ...tokenization_utils_fast import PreTrainedTokenizerFast
 from ...utils import logging
-
-
-if TYPE_CHECKING:
-    from transformers.pipelines.conversational import Conversation
 
 
 logger = logging.get_logger(__name__)
@@ -36,23 +30,13 @@ VOCAB_FILES_NAMES = {"tokenizer_file": "tokenizer.json"}
 PRETRAINED_VOCAB_FILES_MAP = {
     "tokenizer_file": {
         "bigscience/tokenizer": "https://huggingface.co/bigscience/tokenizer/blob/main/tokenizer.json",
-        "bigscience/bloom-350m": "https://huggingface.co/bigscience/bloom-350m/blob/main/tokenizer.json",
-        "bigscience/bloom-760m": "https://huggingface.co/bigscience/bloom-760m/blob/main/tokenizer.json",
-        "bigscience/bloom-1b3": "https://huggingface.co/bigscience/bloom-1b3/blob/main/tokenizer.json",
-        "bigscience/bloom-2b5": "https://huggingface.co/bigscience/bloom-2b5/blob/main/tokenizer.json",
-        "bigscience/bloom-6b3": "https://huggingface.co/bigscience/bloom-2b5/blob/main/tokenizer.json",
+        "bigscience/bloom-560m": "https://huggingface.co/bigscience/bloom-560m/blob/main/tokenizer.json",
+        "bigscience/bloom-1b1": "https://huggingface.co/bigscience/bloom-1b1/blob/main/tokenizer.json",
+        "bigscience/bloom-1b7": "https://huggingface.co/bigscience/bloom-1b7/blob/main/tokenizer.json",
+        "bigscience/bloom-3b": "https://huggingface.co/bigscience/bloom-3b/blob/main/tokenizer.json",
+        "bigscience/bloom-7b1": "https://huggingface.co/bigscience/bloom-7b1/blob/main/tokenizer.json",
         "bigscience/bloom": "https://huggingface.co/bigscience/bloom/blob/main/tokenizer.json",
     },
-}
-
-PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES = {
-    "bigscience/tokenizer": 1024,
-    "bigscience/bloom-350m": 1024,
-    "bigscience/bloom-760m": 1024,
-    "bigscience/bloom-1b3": 1024,
-    "bigscience/bloom-2b5": 1024,
-    "bigscience/bloom-6b3": 1024,
-    "bigscience/bloom": 1024,
 }
 
 
@@ -64,13 +48,15 @@ class BloomTokenizerFast(PreTrainedTokenizerFast):
     This tokenizer has been trained to treat spaces like parts of the tokens (a bit like sentencepiece) so a word will
     be encoded differently whether it is at the beginning of the sentence (without space) or not:
 
-    ```
+    ```python
     >>> from transformers import BloomTokenizerFast
+
     >>> tokenizer = BloomTokenizerFast.from_pretrained("bigscience/bloom")
-    >>> tokenizer("Hello world")['input_ids']
-    [15496, 995]
-    >>> tokenizer(" Hello world")['input_ids']
-    [18435, 995]
+    >>> tokenizer("Hello world")["input_ids"]
+    [59414, 8876]
+
+    >>> tokenizer(" Hello world")["input_ids"]
+    [86153, 8876]
     ```
 
     You can get around that behavior by passing `add_prefix_space=True` when instantiating this tokenizer, but since
@@ -109,9 +95,9 @@ class BloomTokenizerFast(PreTrainedTokenizerFast):
 
     vocab_files_names = VOCAB_FILES_NAMES
     pretrained_vocab_files_map = PRETRAINED_VOCAB_FILES_MAP
-    max_model_input_sizes = PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES
     model_input_names = ["input_ids", "attention_mask"]
     slow_tokenizer_class = None
+    # No `max_model_input_sizes` as BLOOM uses ALiBi positional embeddings
 
     def __init__(
         self,
@@ -123,7 +109,8 @@ class BloomTokenizerFast(PreTrainedTokenizerFast):
         eos_token="</s>",
         pad_token="<pad>",
         add_prefix_space=False,
-        **kwargs
+        clean_up_tokenization_spaces=False,
+        **kwargs,
     ):
         super().__init__(
             vocab_file,
@@ -134,14 +121,19 @@ class BloomTokenizerFast(PreTrainedTokenizerFast):
             eos_token=eos_token,
             pad_token=pad_token,
             add_prefix_space=add_prefix_space,
+            clean_up_tokenization_spaces=clean_up_tokenization_spaces,
             **kwargs,
         )
+        # TODO @ArthurZucker this can only work one way for now, to update later-on. Tests should also properly
+        # check this as they were green before.
+        pre_tok_state = pickle.dumps(self.backend_tokenizer.pre_tokenizer)
+        decoder_state = pickle.dumps(self.backend_tokenizer.decoder)
 
-        pre_tok_state = json.loads(self.backend_tokenizer.pre_tokenizer.__getstate__())
-        if pre_tok_state.get("add_prefix_space", add_prefix_space) != add_prefix_space:
-            pre_tok_class = getattr(pre_tokenizers, pre_tok_state.pop("type"))
-            pre_tok_state["add_prefix_space"] = add_prefix_space
-            self.backend_tokenizer.pre_tokenizer = pre_tok_class(**pre_tok_state)
+        if add_prefix_space:
+            pre_tok_state = pre_tok_state.replace(b'"add_prefix_space":false', b'"add_prefix_space": true')
+            decoder_state = decoder_state.replace(b'"add_prefix_space":false', b'"add_prefix_space": true')
+        self.backend_tokenizer.pre_tokenizer = pickle.loads(pre_tok_state)
+        self.backend_tokenizer.decoder = pickle.loads(decoder_state)
 
         self.add_prefix_space = add_prefix_space
 
@@ -170,12 +162,16 @@ class BloomTokenizerFast(PreTrainedTokenizerFast):
         files = self._tokenizer.model.save(save_directory, name=filename_prefix)
         return tuple(files)
 
-    def _build_conversation_input_ids(self, conversation: "Conversation") -> List[int]:
-        """This corresponds to DialoGPT variants of models."""
-        input_ids = []
-        for is_user, text in conversation.iter_texts():
-            input_ids.extend(self.encode(text, add_special_tokens=False) + [self.eos_token_id])
-
-        if len(input_ids) > self.model_max_length:
-            input_ids = input_ids[-self.model_max_length :]
-        return input_ids
+    @property
+    # Copied from transformers.models.gpt2.tokenization_gpt2.GPT2Tokenizer.default_chat_template
+    def default_chat_template(self):
+        """
+        A simple chat template that ignores role information and just concatenates messages with EOS tokens.
+        """
+        logger.warning_once(
+            "\nNo chat template is defined for this tokenizer - using the default template "
+            f"for the {self.__class__.__name__} class. If the default is not appropriate for "
+            "your model, please set `tokenizer.chat_template` to an appropriate template. "
+            "See https://huggingface.co/docs/transformers/main/chat_templating for more information.\n"
+        )
+        return "{% for message in messages %}" "{{ message.content }}{{ eos_token }}" "{% endfor %}"

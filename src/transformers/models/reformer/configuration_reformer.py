@@ -146,18 +146,19 @@ class ReformerConfig(PretrainedConfig):
     Examples:
 
     ```python
-    >>> from transformers import ReformerModel, ReformerConfig
+    >>> from transformers import ReformerConfig, ReformerModel
 
     >>> # Initializing a Reformer configuration
     >>> configuration = ReformerConfig()
 
-    >>> # Initializing a Reformer model
+    >>> # Initializing a Reformer model (with random weights)
     >>> model = ReformerModel(configuration)
 
     >>> # Accessing the model configuration
     >>> configuration = model.config
     ```
 """
+
     model_type = "reformer"
     keys_to_ignore_at_inference = ["past_buckets_states"]
     attribute_map = {}
@@ -197,7 +198,7 @@ class ReformerConfig(PretrainedConfig):
         tie_word_embeddings=False,
         use_cache=True,
         classifier_dropout=None,
-        **kwargs
+        **kwargs,
     ):
         self.hash_seed = hash_seed
         self.vocab_size = vocab_size

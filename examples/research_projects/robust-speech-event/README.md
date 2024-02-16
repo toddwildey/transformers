@@ -112,7 +112,7 @@ Hugging Face Hub for additional audio data, for example by selecting the categor
 ["speech-processing"](https://huggingface.co/datasets?task_categories=task_categories:speech-processing&sort=downloads).
 All datasets that are available on the Hub can be downloaded via the 🤗 Datasets library in the same way Common Voice is downloaded.
 If one wants to combine multiple datasets for training, it might make sense to take a look at 
-the [`interleave_datasets`](https://huggingface.co/docs/datasets/package_reference/main_classes.html?highlight=interleave#datasets.interleave_datasets) function.
+the [`interleave_datasets`](https://huggingface.co/docs/datasets/package_reference/main_classes?highlight=interleave#datasets.interleave_datasets) function.
 
 In addition, participants can also make use of their audio data. Here, please make sure that you **are allowed to use the audio data**. E.g., if audio data 
 is taken from media platforms, such as YouTube, it should be verified that the media platform and the owner of the data have given her/his approval to use the audio 
@@ -703,7 +703,7 @@ We are very excited to be hosting 2 days of talks from Kensho-Technologies, Mozi
 - Memory efficient training:
 
 In case, you are getting out-of-memory errors on your GPU, we recommend to use 
-[bitsandbytes](https://github.com/facebookresearch/bitsandbytes) to replace the 
+[bitsandbytes](https://github.com/TimDettmers/bitsandbytes) to replace the 
 native memory-intensive Adam optimizer with the one of `bitsandbytes`. You
 can simply run the script `./run_speech_recognition_ctc_bnb.py` provided in this 
 folder that makes use of `bitsandbytes` instead of the official one.

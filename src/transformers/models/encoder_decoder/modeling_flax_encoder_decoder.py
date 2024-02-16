@@ -306,6 +306,7 @@ class FlaxEncoderDecoderModel(FlaxPreTrainedModel):
     decoder module when created with the :meth*~transformers.FlaxAutoModel.from_pretrained* class method for the
     encoder and :meth*~transformers.FlaxAutoModelForCausalLM.from_pretrained* class method for the decoder.
     """
+
     config_class = EncoderDecoderConfig
     base_model_prefix = "encoder_decoder"
     module_class = FlaxEncoderDecoderModule
@@ -317,7 +318,7 @@ class FlaxEncoderDecoderModel(FlaxPreTrainedModel):
         seed: int = 0,
         dtype: jnp.dtype = jnp.float32,
         _do_init: bool = True,
-        **kwargs
+        **kwargs,
     ):
         if input_shape is None:
             input_shape = ((1, 1), (1, 1))
@@ -582,7 +583,6 @@ class FlaxEncoderDecoderModel(FlaxPreTrainedModel):
         def _decoder_forward(
             module, decoder_input_ids, decoder_attention_mask, decoder_position_ids, encoder_hidden_states, **kwargs
         ):
-
             projection_module = module._get_projection_module()
             decoder_module = module._get_decoder_module()
 
@@ -723,10 +723,10 @@ class FlaxEncoderDecoderModel(FlaxPreTrainedModel):
         self,
         decoder_input_ids,
         max_length,
-        attention_mask: Optional[jnp.DeviceArray] = None,
-        decoder_attention_mask: Optional[jnp.DeviceArray] = None,
+        attention_mask: Optional[jax.Array] = None,
+        decoder_attention_mask: Optional[jax.Array] = None,
         encoder_outputs=None,
-        **kwargs
+        **kwargs,
     ):
         # initializing the cache
         batch_size, seq_length = decoder_input_ids.shape
@@ -763,7 +763,7 @@ class FlaxEncoderDecoderModel(FlaxPreTrainedModel):
         encoder_pretrained_model_name_or_path: Optional[Union[str, os.PathLike]] = None,
         decoder_pretrained_model_name_or_path: Optional[Union[str, os.PathLike]] = None,
         *model_args,
-        **kwargs
+        **kwargs,
     ) -> FlaxPreTrainedModel:
         r"""
         Instantiate an encoder and a decoder from one or two base classes of the library from pretrained model

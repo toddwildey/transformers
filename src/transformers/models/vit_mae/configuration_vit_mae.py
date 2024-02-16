@@ -65,7 +65,7 @@ class ViTMAEConfig(PretrainedConfig):
             The number of input channels.
         qkv_bias (`bool`, *optional*, defaults to `True`):
             Whether to add a bias to the queries, keys and values.
-        decoder_num_attention_heads (`int`, *optional*, defaults to 12):
+        decoder_num_attention_heads (`int`, *optional*, defaults to 16):
             Number of attention heads for each attention layer in the decoder.
         decoder_hidden_size (`int`, *optional*, defaults to 512):
             Dimensionality of the decoder.
@@ -82,17 +82,18 @@ class ViTMAEConfig(PretrainedConfig):
     Example:
 
     ```python
-    >>> from transformers import ViTMAEModel, ViTMAEConfig
+    >>> from transformers import ViTMAEConfig, ViTMAEModel
 
     >>> # Initializing a ViT MAE vit-mae-base style configuration
     >>> configuration = ViTMAEConfig()
 
-    >>> # Initializing a model from the vit-mae-base style configuration
+    >>> # Initializing a model (with random weights) from the vit-mae-base style configuration
     >>> model = ViTMAEModel(configuration)
 
     >>> # Accessing the model configuration
     >>> configuration = model.config
     ```"""
+
     model_type = "vit_mae"
 
     def __init__(
@@ -106,7 +107,6 @@ class ViTMAEConfig(PretrainedConfig):
         attention_probs_dropout_prob=0.0,
         initializer_range=0.02,
         layer_norm_eps=1e-12,
-        is_encoder_decoder=False,
         image_size=224,
         patch_size=16,
         num_channels=3,
@@ -117,7 +117,7 @@ class ViTMAEConfig(PretrainedConfig):
         decoder_intermediate_size=2048,
         mask_ratio=0.75,
         norm_pix_loss=False,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
 

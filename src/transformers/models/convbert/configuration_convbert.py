@@ -85,22 +85,24 @@ class ConvBertConfig(PretrainedConfig):
     Example:
 
     ```python
-    >>> from transformers import ConvBertModel, ConvBertConfig
+    >>> from transformers import ConvBertConfig, ConvBertModel
 
     >>> # Initializing a ConvBERT convbert-base-uncased style configuration
     >>> configuration = ConvBertConfig()
-    >>> # Initializing a model from the convbert-base-uncased style configuration
+
+    >>> # Initializing a model (with random weights) from the convbert-base-uncased style configuration
     >>> model = ConvBertModel(configuration)
+
     >>> # Accessing the model configuration
     >>> configuration = model.config
     ```"""
+
     model_type = "convbert"
 
     def __init__(
         self,
         vocab_size=30522,
         hidden_size=768,
-        is_encoder_decoder=False,
         num_hidden_layers=12,
         num_attention_heads=12,
         intermediate_size=3072,
@@ -123,7 +125,6 @@ class ConvBertConfig(PretrainedConfig):
     ):
         super().__init__(
             pad_token_id=pad_token_id,
-            is_encoder_decoder=is_encoder_decoder,
             bos_token_id=bos_token_id,
             eos_token_id=eos_token_id,
             **kwargs,

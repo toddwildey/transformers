@@ -15,7 +15,6 @@
 """ Testing suite for the PyTorch LeViT model. """
 
 
-import inspect
 import unittest
 import warnings
 from math import ceil, floor
@@ -27,6 +26,7 @@ from transformers.testing_utils import require_torch, require_vision, slow, torc
 
 from ...test_configuration_common import ConfigTester
 from ...test_modeling_common import ModelTesterMixin, floats_tensor, ids_tensor
+from ...test_pipeline_mixin import PipelineTesterMixin
 
 
 if is_torch_available():
@@ -45,7 +45,7 @@ if is_torch_available():
 if is_vision_available():
     from PIL import Image
 
-    from transformers import LevitFeatureExtractor
+    from transformers import LevitImageProcessor
 
 
 class LevitConfigTester(ConfigTester):
@@ -66,10 +66,10 @@ class LevitModelTester:
         stride=2,
         padding=1,
         patch_size=16,
-        hidden_sizes=[128, 256, 384],
-        num_attention_heads=[4, 6, 8],
+        hidden_sizes=[16, 32, 48],
+        num_attention_heads=[1, 2, 3],
         depths=[2, 3, 4],
-        key_dim=[16, 16, 16],
+        key_dim=[8, 8, 8],
         drop_path_rate=0,
         mlp_ratio=[2, 2, 2],
         attention_ratio=[2, 2, 2],
@@ -163,7 +163,7 @@ class LevitModelTester:
 
 
 @require_torch
-class LevitModelTest(ModelTesterMixin, unittest.TestCase):
+class LevitModelTest(ModelTesterMixin, PipelineTesterMixin, unittest.TestCase):
     """
     Here we also overwrite some of the tests of test_modeling_common.py, as Levit does not use input_ids, inputs_embeds,
     attention_mask and seq_length.
@@ -173,6 +173,14 @@ class LevitModelTest(ModelTesterMixin, unittest.TestCase):
         (LevitModel, LevitForImageClassification, LevitForImageClassificationWithTeacher)
         if is_torch_available()
         else ()
+    )
+    pipeline_model_mapping = (
+        {
+            "feature-extraction": LevitModel,
+            "image-classification": (LevitForImageClassification, LevitForImageClassificationWithTeacher),
+        }
+        if is_torch_available()
+        else {}
     )
 
     test_pruning = False
@@ -208,18 +216,6 @@ class LevitModelTest(ModelTesterMixin, unittest.TestCase):
     @unittest.skip(reason="Levit does not output attentions")
     def test_attention_outputs(self):
         pass
-
-    def test_forward_signature(self):
-        config, _ = self.model_tester.prepare_config_and_inputs_for_common()
-
-        for model_class in self.all_model_classes:
-            model = model_class(config)
-            signature = inspect.signature(model.forward)
-            # signature.parameters is an OrderedDict => so arg_names order is deterministic
-            arg_names = [*signature.parameters.keys()]
-
-            expected_arg_names = ["pixel_values"]
-            self.assertListEqual(arg_names[:1], expected_arg_names)
 
     def test_hidden_states_output(self):
         def check_hidden_states_output(inputs_dict, config, model_class):
@@ -355,7 +351,6 @@ class LevitModelTest(ModelTesterMixin, unittest.TestCase):
 
             for problem_type in problem_types:
                 with self.subTest(msg=f"Testing {model_class} with {problem_type['title']}"):
-
                     config.problem_type = problem_type["title"]
                     config.num_labels = problem_type["num_labels"]
 
@@ -401,8 +396,8 @@ def prepare_img():
 @require_vision
 class LevitModelIntegrationTest(unittest.TestCase):
     @cached_property
-    def default_feature_extractor(self):
-        return LevitFeatureExtractor.from_pretrained(LEVIT_PRETRAINED_MODEL_ARCHIVE_LIST[0])
+    def default_image_processor(self):
+        return LevitImageProcessor.from_pretrained(LEVIT_PRETRAINED_MODEL_ARCHIVE_LIST[0])
 
     @slow
     def test_inference_image_classification_head(self):
@@ -410,9 +405,9 @@ class LevitModelIntegrationTest(unittest.TestCase):
             torch_device
         )
 
-        feature_extractor = self.default_feature_extractor
+        image_processor = self.default_image_processor
         image = prepare_img()
-        inputs = feature_extractor(images=image, return_tensors="pt").to(torch_device)
+        inputs = image_processor(images=image, return_tensors="pt").to(torch_device)
 
         # forward pass
         with torch.no_grad():

@@ -33,7 +33,7 @@ For the old `finetune_trainer.py` and related utils, see [`examples/legacy/seq2s
 
 `run_translation.py` is a lightweight examples of how to download and preprocess a dataset from the [🤗 Datasets](https://github.com/huggingface/datasets) library or use your own files (jsonlines or csv), then fine-tune one of the architectures above on it.
 
-For custom datasets in `jsonlines` format please see: https://huggingface.co/docs/datasets/loading_datasets.html#json-files
+For custom datasets in `jsonlines` format please see: https://huggingface.co/docs/datasets/loading_datasets#json-files
 and you also will find examples of these below.
 
 
@@ -150,7 +150,7 @@ python examples/pytorch/translation/run_translation.py \
 
 ## With Accelerate
 
-Based on the script [`run_translation_no_trainer.py`](https://github.com/huggingface/transformers/blob/main/examples/pytorch/translation/run_translationn_no_trainer.py).
+Based on the script [`run_translation_no_trainer.py`](https://github.com/huggingface/transformers/blob/main/examples/pytorch/translation/run_translation_no_trainer.py).
 
 Like `run_translation.py`, this script allows you to fine-tune any of the models supported on a
 translation task, the main difference is that this

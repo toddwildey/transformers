@@ -94,12 +94,12 @@ class SqueezeBertConfig(PretrainedConfig):
     Examples:
 
     ```python
-    >>> from transformers import SqueezeBertModel, SqueezeBertConfig
+    >>> from transformers import SqueezeBertConfig, SqueezeBertModel
 
     >>> # Initializing a SqueezeBERT configuration
     >>> configuration = SqueezeBertConfig()
 
-    >>> # Initializing a model from the configuration above
+    >>> # Initializing a model (with random weights) from the configuration above
     >>> model = SqueezeBertModel(configuration)
 
     >>> # Accessing the model configuration
@@ -109,6 +109,7 @@ class SqueezeBertConfig(PretrainedConfig):
     Attributes: pretrained_config_archive_map (Dict[str, str]): A dictionary containing all the available pre-trained
     checkpoints.
     """
+
     pretrained_config_archive_map = SQUEEZEBERT_PRETRAINED_CONFIG_ARCHIVE_MAP
     model_type = "squeezebert"
 
@@ -134,7 +135,7 @@ class SqueezeBertConfig(PretrainedConfig):
         post_attention_groups=1,
         intermediate_groups=4,
         output_groups=4,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(pad_token_id=pad_token_id, **kwargs)
 
