@@ -6,8 +6,8 @@ source .env/bin/activate
 export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
 
 MODEL_BASE_NAME="${1:-gpt2}"
-DATASET_NAME="pg19"
-DATASET_CONFIG_NAME="pg19"
+DATASET_NAME="${DATASET_NAME:-"wikimedia/wikipedia"}"
+DATASET_CONFIG_NAME="${DATASET_CONFIG_NAME:-"20231101.en"}"
 OUTPUT_DIR="../models/${MODEL_BASE_NAME}_infinity/focused/checkpoints"
 
 # while true; do

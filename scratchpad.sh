@@ -1,10 +1,31 @@
-# Train GPT2-Small Infinity
+# Train GPT2-Small Infinity on PG19
+export DATASET_NAME="pg19"
+export DATASET_CONFIG_NAME="pg19"
 ./train_gpt2_infinity.sh gpt2
 
-# Train GPT2-Large Infinity
+# Train GPT2-Large Infinity on PG19
+export DATASET_NAME="pg19"
+export DATASET_CONFIG_NAME="pg19"
 ./train_gpt2_infinity.sh gpt2-large
 
-# Train GPT2-XL Infinity
+# Train GPT2-XL Infinity on PG19
+export DATASET_NAME="pg19"
+export DATASET_CONFIG_NAME="pg19"
+./train_gpt2_infinity.sh gpt2-xl
+
+# Train GPT2-Small Infinity on Wikipedia
+export DATASET_NAME="wikimedia/wikipedia"
+export DATASET_CONFIG_NAME="20231101.en"
+./train_gpt2_infinity.sh gpt2
+
+# Train GPT2-Large Infinity on Wikipedia
+export DATASET_NAME="wikimedia/wikipedia"
+export DATASET_CONFIG_NAME="20231101.en"
+./train_gpt2_infinity.sh gpt2-large
+
+# Train GPT2-XL Infinity on Wikipedia
+export DATASET_NAME="wikimedia/wikipedia"
+export DATASET_CONFIG_NAME="20231101.en"
 ./train_gpt2_infinity.sh gpt2-xl
 
 
@@ -112,6 +133,32 @@ TRANSFORMERS_HOST_NAME="129.213.25.170"
 LAST_CHECKPOINT_ON_HOST="checkpoint-7898000"
 scp -i ~/.ssh/id_ed25519-lambda \
     ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/$LAST_CHECKPOINT_ON_HOST.tar.gz \
+    ../models/gpt2-large_infinity/focused/checkpoints
+
+# Tar final model after training
+TRANSFORMERS_HOST_NAME="129.213.25.170"
+ssh -i ~/.ssh/id_ed25519-lambda ubuntu@$TRANSFORMERS_HOST_NAME
+cd $HOME/models/gpt2-large_infinity/focused/checkpoints
+
+tar -czvf pg19.tar.gz \
+    README.md \
+    all_results.json \
+    config.json \
+    merges.txt \
+    pytorch_model.bin \
+    special_tokens_map.json \
+    tokenizer.json \
+    tokenizer_config.json \
+    train_results.json \
+    trainer_state.json \
+    training_args.bin \
+    vocab.json
+
+# Download final model after training
+TRANSFORMERS_HOST_NAME="129.213.25.170"
+FINAL_MODEL_FILENAME="pg19"
+scp -i ~/.ssh/id_ed25519-lambda \
+    ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/$FINAL_MODEL_FILENAME.tar.gz \
     ../models/gpt2-large_infinity/focused/checkpoints
 
 # Extract tarred model on desktop

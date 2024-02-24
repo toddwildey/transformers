@@ -20,6 +20,7 @@ ssh -i "$REMOTE_IDENTITY_FILE" "$REMOTE_USER@$REMOTE_HOST" "ssh-keygen -F github
 ssh -i "$REMOTE_IDENTITY_FILE" "$REMOTE_USER@$REMOTE_HOST" "sudo apt install mosh"
 ssh -i "$REMOTE_IDENTITY_FILE" "$REMOTE_USER@$REMOTE_HOST" "cd -- $REMOTE_HOME_PATH && git clone git@github.com:toddwildey/transformers.git"
 ssh -i "$REMOTE_IDENTITY_FILE" "$REMOTE_USER@$REMOTE_HOST" "cd -- $REMOTE_HOME_PATH/transformers && git checkout $REMOTE_BRANCH_NAME"
+ssh -i "$REMOTE_IDENTITY_FILE" "$REMOTE_USER@$REMOTE_HOST" "cd -- $REMOTE_HOME_PATH/transformers && ./setup.python.sh"
 ssh -i "$REMOTE_IDENTITY_FILE" "$REMOTE_USER@$REMOTE_HOST" "cd -- $REMOTE_HOME_PATH/transformers && ./setup.sh"
 
 echo "ssh -i $REMOTE_IDENTITY_FILE $REMOTE_USER@$REMOTE_HOST"
