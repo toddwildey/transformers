@@ -51,6 +51,18 @@ TRANSFORMERS_HOST_NAME="192.9.243.187"
 mosh --ssh="ssh -i ~/.ssh/id_ed25519-lambda" ubuntu@$TRANSFORMERS_HOST_NAME
 
 
+# Reset traininer state
+ssh -i ~/.ssh/id_ed25519-lambda ubuntu@$TRANSFORMERS_HOST_NAME
+cd $HOME/models/gpt2-large_infinity/focused/checkpoints/checkpoint-0
+mv trainer_state.json trainer_state.json.bak
+cat trainer_state.json.bak \
+    | jq -r '.log_history = []' \
+    | jq -r '.global_step = 0' \
+    | jq -r '.epoch = 0' \
+    | jq -r '.total_flos = 0' \
+    | jq -r 'del(.max_steps)' \
+    | tee trainer_state.json
+
 # Upload core dataset files
 ssh -i ~/.ssh/id_ed25519-lambda ubuntu@$TRANSFORMERS_HOST_NAME \
     "mkdir -p \$HOME/.cache/huggingface/datasets/pg19/pg19/0.1.0/27ec2bf19d4783d6380fa725bb6664a91e8016ef4dd616de4d63570ff9aeaf52"
