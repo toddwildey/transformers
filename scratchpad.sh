@@ -124,10 +124,18 @@ export LAST_CHECKPOINT_ON_HOST=$(
 ssh -i ~/.ssh/id_ed25519-lambda ubuntu@$TRANSFORMERS_HOST_NAME \
         "cd \$HOME/models/gpt2-large_infinity/focused/checkpoints && tar -czvf $LAST_CHECKPOINT_ON_HOST.tar.gz $LAST_CHECKPOINT_ON_HOST"
 
+# Download model from host with training state for wikipedia
+mkdir -p ../models/gpt2-large_infinity/focused/wikipedia/checkpoints
+export LAST_CHECKPOINT_ON_HOST="checkpoint-1224000"
+scp -i ~/.ssh/id_ed25519-lambda \
+    ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/$LAST_CHECKPOINT_ON_HOST.tar.gz \
+    ../models/gpt2-large_infinity/focused/wikipedia/checkpoints
+
+# Download model from host with training state for pg19
 export LAST_CHECKPOINT_ON_HOST="checkpoint-14332000"
 scp -i ~/.ssh/id_ed25519-lambda \
     ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/$LAST_CHECKPOINT_ON_HOST.tar.gz \
-    ../models/gpt2-large_infinity/focused/checkpoints
+    ../models/gpt2-large_infinity/focused/pg19/checkpoints
 
 # Tar only model files
 ssh -i ~/.ssh/id_ed25519-lambda ubuntu@$TRANSFORMERS_HOST_NAME \
@@ -140,12 +148,12 @@ scp -i ~/.ssh/id_ed25519-lambda \
     ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/$LAST_CHECKPOINT_ON_HOST.tar.gz \
     ../models/gpt2-large_infinity/focused/checkpoints
 
-# Download previously tarred model
+# Download previously tarred model for pg19
 TRANSFORMERS_HOST_NAME="129.213.25.170"
 LAST_CHECKPOINT_ON_HOST="checkpoint-7898000"
 scp -i ~/.ssh/id_ed25519-lambda \
     ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/$LAST_CHECKPOINT_ON_HOST.tar.gz \
-    ../models/gpt2-large_infinity/focused/checkpoints
+    ../models/gpt2-large_infinity/focused/pg19/checkpoints
 
 # Tar final model after training
 TRANSFORMERS_HOST_NAME="129.213.25.170"
