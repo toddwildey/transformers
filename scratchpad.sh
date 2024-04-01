@@ -126,7 +126,7 @@ ssh -i ~/.ssh/id_ed25519-lambda ubuntu@$TRANSFORMERS_HOST_NAME \
 
 # Download model from host with training state for wikipedia
 mkdir -p ../models/gpt2-large_infinity/focused/wikipedia/checkpoints
-export LAST_CHECKPOINT_ON_HOST="checkpoint-1224000"
+export LAST_CHECKPOINT_ON_HOST="checkpoint-2547000"
 scp -i ~/.ssh/id_ed25519-lambda \
     ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/$LAST_CHECKPOINT_ON_HOST.tar.gz \
     ../models/gpt2-large_infinity/focused/wikipedia/checkpoints
@@ -182,6 +182,9 @@ scp -i ~/.ssh/id_ed25519-lambda \
     ../models/gpt2-large_infinity/focused/checkpoints
 
 # Extract tarred model on desktop
+tar -xzvf "../models/gpt2-large_infinity/focused/wikipedia/checkpoints/$LAST_CHECKPOINT_ON_HOST.tar.gz" \
+    --directory "../models/gpt2-large_infinity/focused/wikipedia/checkpoints/"
+
 cd ../models/gpt2-large_infinity/focused/checkpoints/
 tar -xzvf checkpoint-14882000.tar.gz
 
