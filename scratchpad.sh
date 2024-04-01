@@ -113,6 +113,10 @@ scp -i ~/.ssh/id_ed25519-lambda ~/.ssh/id_ed25519-lambda "ubuntu@$TRANSFORMERS_H
 scp -i ~/.ssh/id_ed25519-lambda get_model_path_for_evaluation.sh ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/transformers/
 
 
+# Tar, download, and extract model snapshot from training host
+TRANSFORMERS_HOST_NAME="129.213.25.170"
+./ontology/tar_download_and_extract_model_snapshot.sh $TRANSFORMERS_HOST_NAME
+
 # Tar and download model from host
 TRANSFORMERS_HOST_NAME="129.213.25.170"
 export LAST_CHECKPOINT_ON_HOST=$(
