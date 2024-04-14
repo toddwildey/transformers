@@ -28,12 +28,34 @@ export DATASET_NAME="wikimedia/wikipedia"
 export DATASET_CONFIG_NAME="20231101.en"
 ./train_gpt2_infinity.sh gpt2-xl
 
+# SSH into host
+TRANSFORMERS_HOST_NAME="129.213.25.170"
+mosh --ssh="ssh -i ~/.ssh/id_ed25519-lambda" ubuntu@$TRANSFORMERS_HOST_NAME
 
-# Dataset tests
-source .env/bin/activate
-python examples/pytorch/language-modeling/sequential_iterable_dataset_test.py
-accelerate launch examples/pytorch/language-modeling/sequential_iterable_dataset_test.py
-accelerate launch --num_processes=2 examples/pytorch/language-modeling/sequential_iterable_dataset_test.py
+TRANSFORMERS_HOST_NAME="192.9.243.187"
+mosh --ssh="ssh -i ~/.ssh/id_ed25519-lambda" ubuntu@$TRANSFORMERS_HOST_NAME
+
+# Tar, download, and extract model snapshot from training host
+TRANSFORMERS_HOST_NAME="129.213.25.170"
+./ontology/tar_download_and_extract_model_snapshot.sh $TRANSFORMERS_HOST_NAME
+
+# Watch tar status for file
+cd $HOME/models/gpt2-large_infinity/focused/checkpoints
+watch -n1 du -sh *
+
+# Monitor GPU memory usage
+nvidia-smi -f nvidia.smi -l 1
+
+scp -i ~/.ssh/id_ed25519-lambda ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/transformers/nvidia.smi .
+
+##
+##  Training host setup
+##
+
+# Copy Lambda Labs SSH key to host
+TRANSFORMERS_HOST_NAME="192.9.243.187"
+scp -i ~/.ssh/id_ed25519-lambda ~/.ssh/id_ed25519-lambda "ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/.ssh"
+
 
 # Bootstrap host
 TRANSFORMERS_HOST_NAME="129.213.25.170"
@@ -43,25 +65,16 @@ TRANSFORMERS_HOST_NAME="192.9.243.187"
 ./bootstrap_host.sh $TRANSFORMERS_HOST_NAME ubuntu ~/.ssh/id_ed25519-lambda "gpt2_infinity"
 
 
-# SSH into host
-TRANSFORMERS_HOST_NAME="129.213.25.170"
-mosh --ssh="ssh -i ~/.ssh/id_ed25519-lambda" ubuntu@$TRANSFORMERS_HOST_NAME
+# Dataset tests
+source .env/bin/activate
+python examples/pytorch/language-modeling/sequential_iterable_dataset_test.py
+accelerate launch examples/pytorch/language-modeling/sequential_iterable_dataset_test.py
+accelerate launch --num_processes=2 examples/pytorch/language-modeling/sequential_iterable_dataset_test.py
 
-TRANSFORMERS_HOST_NAME="192.9.243.187"
-mosh --ssh="ssh -i ~/.ssh/id_ed25519-lambda" ubuntu@$TRANSFORMERS_HOST_NAME
 
-
-# Reset traininer state
-ssh -i ~/.ssh/id_ed25519-lambda ubuntu@$TRANSFORMERS_HOST_NAME
-cd $HOME/models/gpt2-large_infinity/focused/checkpoints/checkpoint-0
-mv trainer_state.json trainer_state.json.bak
-cat trainer_state.json.bak \
-    | jq -r '.log_history = []' \
-    | jq -r '.global_step = 0' \
-    | jq -r '.epoch = 0' \
-    | jq -r '.total_flos = 0' \
-    | jq -r 'del(.max_steps)' \
-    | tee trainer_state.json
+##
+##  Dataset cache copy
+##
 
 # Upload core dataset files
 ssh -i ~/.ssh/id_ed25519-lambda ubuntu@$TRANSFORMERS_HOST_NAME \
@@ -89,33 +102,10 @@ rsync -Prv -e "ssh -i $HOME/.ssh/id_ed25519-lambda" \
     "ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/.cache/huggingface/datasets/$HUGGINGFACE_DATASET_PATH/cache-*.arrow" \
     "$HOME/.cache/huggingface/datasets/$HUGGINGFACE_DATASET_PATH/"
 
-
 # Monitor files on remote host
 du -sh /home/ubuntu/.cache/huggingface/datasets/pg19/pg19/0.1.0/27ec2bf19d4783d6380fa725bb6664a91e8016ef4dd616de4d63570ff9aeaf52/*
 ls -al /home/ubuntu/.cache/huggingface/datasets/pg19/pg19/0.1.0/27ec2bf19d4783d6380fa725bb6664a91e8016ef4dd616de4d63570ff9aeaf52
 ls -1 /home/ubuntu/.cache/huggingface/datasets/pg19/pg19/0.1.0/27ec2bf19d4783d6380fa725bb6664a91e8016ef4dd616de4d63570ff9aeaf52
-
-
-# Monitor GPU memory usage
-nvidia-smi -f nvidia.smi -l 1
-
-scp -i ~/.ssh/id_ed25519-lambda ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/transformers/nvidia.smi .
-
-
-# Copy Lambda Labs SSH key to host
-TRANSFORMERS_HOST_NAME="192.9.243.187"
-scp -i ~/.ssh/id_ed25519-lambda ~/.ssh/id_ed25519-lambda "ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/.ssh"
-
-
-# Testing get_model_path_for_evaluation.sh
-./get_model_path_for_evaluation.sh ../models/gpt2-large_infinity/focused/checkpoints/ checkpoint
-
-scp -i ~/.ssh/id_ed25519-lambda get_model_path_for_evaluation.sh ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/transformers/
-
-
-# Tar, download, and extract model snapshot from training host
-TRANSFORMERS_HOST_NAME="129.213.25.170"
-./ontology/tar_download_and_extract_model_snapshot.sh $TRANSFORMERS_HOST_NAME
 
 # Tar and download model from host
 TRANSFORMERS_HOST_NAME="129.213.25.170"
@@ -159,6 +149,21 @@ scp -i ~/.ssh/id_ed25519-lambda \
     ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/$LAST_CHECKPOINT_ON_HOST.tar.gz \
     ../models/gpt2-large_infinity/focused/pg19/checkpoints
 
+# Extract tarred model on desktop
+tar -xzvf "../models/gpt2-large_infinity/focused/wikipedia/checkpoints/$LAST_CHECKPOINT_ON_HOST.tar.gz" \
+    --directory "../models/gpt2-large_infinity/focused/wikipedia/checkpoints/"
+
+cd ../models/gpt2-large_infinity/focused/checkpoints/
+tar -xzvf checkpoint-14882000.tar.gz
+
+# Extract tarred model on host
+cd $HOME/models/gpt2-large_infinity/focused/checkpoints/
+tar -xzvf checkpoint-7898000.tar.gz
+
+##
+##  Download final model after training completion
+##
+
 # Tar final model after training
 TRANSFORMERS_HOST_NAME="129.213.25.170"
 ssh -i ~/.ssh/id_ed25519-lambda ubuntu@$TRANSFORMERS_HOST_NAME
@@ -185,21 +190,22 @@ scp -i ~/.ssh/id_ed25519-lambda \
     ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/models/gpt2-large_infinity/focused/checkpoints/$FINAL_MODEL_FILENAME.tar.gz \
     ../models/gpt2-large_infinity/focused/checkpoints
 
-# Extract tarred model on desktop
-tar -xzvf "../models/gpt2-large_infinity/focused/wikipedia/checkpoints/$LAST_CHECKPOINT_ON_HOST.tar.gz" \
-    --directory "../models/gpt2-large_infinity/focused/wikipedia/checkpoints/"
+# Reset traininer state
+ssh -i ~/.ssh/id_ed25519-lambda ubuntu@$TRANSFORMERS_HOST_NAME
+cd $HOME/models/gpt2-large_infinity/focused/checkpoints/checkpoint-0
+mv trainer_state.json trainer_state.json.bak
+cat trainer_state.json.bak \
+    | jq -r '.log_history = []' \
+    | jq -r '.global_step = 0' \
+    | jq -r '.epoch = 0' \
+    | jq -r '.total_flos = 0' \
+    | jq -r 'del(.max_steps)' \
+    | tee trainer_state.json
 
-cd ../models/gpt2-large_infinity/focused/checkpoints/
-tar -xzvf checkpoint-14882000.tar.gz
 
-# Extract tarred model on host
-cd $HOME/models/gpt2-large_infinity/focused/checkpoints/
-tar -xzvf checkpoint-7898000.tar.gz
-
-# Watch tar status for file
-cd $HOME/models/gpt2-large_infinity/focused/checkpoints
-watch -n1 du -sh *
-
+##
+##  Testing
+##
 
 # Copy remote model locally
 mkdir -p "../models/gpt2-large_infinity/focused/checkpoints/checkpoint-41000"
@@ -209,6 +215,10 @@ rsync -Prv -e "ssh -i $HOME/.ssh/id_ed25519-lambda" \
     "../models/gpt2-large_infinity/focused/checkpoints/checkpoint-41000"
 
 
+# Testing get_model_path_for_evaluation.sh
+./get_model_path_for_evaluation.sh ../models/gpt2-large_infinity/focused/checkpoints/ checkpoint
+
+scp -i ~/.ssh/id_ed25519-lambda get_model_path_for_evaluation.sh ubuntu@$TRANSFORMERS_HOST_NAME:/home/ubuntu/transformers/
 
 
 # Upload local datasets downloads to host [DEPRECATED]
