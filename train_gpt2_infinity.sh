@@ -20,7 +20,7 @@ OUTPUT_DIR="../models/${MODEL_BASE_NAME}_infinity/focused/checkpoints"
         --dataset_name "$DATASET_NAME" \
         --dataset_config_name "$DATASET_CONFIG_NAME" \
         --do_train \
-        --save_steps=1000 \
+        --save_steps=10000 \
         --save_total_limit=2 \
         --block_size=512 \
         --output_dir="$OUTPUT_DIR"
