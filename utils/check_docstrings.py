@@ -32,6 +32,7 @@ python utils/check_docstrings.py --fix_and_overwrite
 which is used by `make fix-copies` (note that this fills what it cans, you might have to manually fill information
 like argument descriptions).
 """
+
 import argparse
 import ast
 import enum
@@ -233,6 +234,8 @@ OBJECTS_TO_IGNORE = [
     "FlaxGPTNeoModel",
     "FlaxLlamaForCausalLM",
     "FlaxLlamaModel",
+    "FlaxGemmaForCausalLM",
+    "FlaxGemmaModel",
     "FlaxMBartForConditionalGeneration",
     "FlaxMBartForQuestionAnswering",
     "FlaxMBartForSequenceClassification",
@@ -393,6 +396,7 @@ OBJECTS_TO_IGNORE = [
     "MraConfig",
     "MusicgenDecoderConfig",
     "MusicgenForConditionalGeneration",
+    "MusicgenMelodyForConditionalGeneration",
     "MvpConfig",
     "MvpTokenizerFast",
     "MT5Tokenizer",
@@ -694,6 +698,8 @@ OBJECTS_TO_IGNORE = [
     "TFSegformerModel",
     "TFSpeech2TextForConditionalGeneration",
     "TFSpeech2TextModel",
+    "TFSwiftFormerForImageClassification",
+    "TFSwiftFormerModel",
     "TFSwinForImageClassification",
     "TFSwinForMaskedImageModeling",
     "TFSwinModel",

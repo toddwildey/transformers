@@ -43,7 +43,7 @@ from transformers.testing_utils import (
 
 
 def get_some_linear_layer(model):
-    if model.config.model_type == "openai-community/gpt2":
+    if model.config.model_type == "gpt2":
         return model.transformer.h[0].mlp.c_fc
     elif model.config.model_type == "opt":
         try:
@@ -236,6 +236,23 @@ class Bnb4BitTest(Base4bitTest):
         output_sequences = model_4bit_from_config.generate(
             input_ids=encoded_input["input_ids"].to(0), max_new_tokens=10
         )
+
+        self.assertIn(self.tokenizer.decode(output_sequences[0], skip_special_tokens=True), self.EXPECTED_OUTPUTS)
+
+    def test_generate_quality_dequantize(self):
+        r"""
+        Test that loading the model and unquantize it produce correct results
+        """
+        bnb_config = BitsAndBytesConfig(load_in_4bit=True)
+
+        model_4bit = AutoModelForCausalLM.from_pretrained(
+            self.model_name, quantization_config=bnb_config, device_map="auto"
+        )
+
+        model_4bit.dequantize()
+
+        encoded_input = self.tokenizer(self.input_text, return_tensors="pt")
+        output_sequences = model_4bit.generate(input_ids=encoded_input["input_ids"].to(0), max_new_tokens=10)
 
         self.assertIn(self.tokenizer.decode(output_sequences[0], skip_special_tokens=True), self.EXPECTED_OUTPUTS)
 

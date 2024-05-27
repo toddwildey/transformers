@@ -321,18 +321,16 @@ class FSMTModelTest(ModelTesterMixin, GenerationTesterMixin, PipelineTesterMixin
     def test_inputs_embeds(self):
         pass
 
+    @unittest.skip("Input ids is required for FSMT.")
+    def test_inputs_embeds_matches_input_ids(self):
+        pass
+
     @unittest.skip("model weights aren't tied in FSMT.")
     def test_tie_model_weights(self):
         pass
 
     @unittest.skip("TODO: Decoder embeddings cannot be resized at the moment")
     def test_resize_embeddings_untied(self):
-        pass
-
-    @unittest.skip(
-        "Not currently compatible. Fails with - NotImplementedError: Cannot copy out of meta tensor; no data!"
-    )
-    def test_save_load_low_cpu_mem_usage(self):
         pass
 
 

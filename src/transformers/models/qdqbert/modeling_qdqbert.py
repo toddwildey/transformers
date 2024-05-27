@@ -13,8 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" PyTorch QDQBERT model."""
-
+"""PyTorch QDQBERT model."""
 
 import math
 import os
@@ -68,11 +67,6 @@ if is_pytorch_quantization_available():
 
 _CHECKPOINT_FOR_DOC = "google-bert/bert-base-uncased"
 _CONFIG_FOR_DOC = "QDQBertConfig"
-
-QDQBERT_PRETRAINED_MODEL_ARCHIVE_LIST = [
-    "google-bert/bert-base-uncased",
-    # See all BERT models at https://huggingface.co/models?filter=bert
-]
 
 
 def load_tf_weights_in_qdqbert(model, tf_checkpoint_path):

@@ -97,7 +97,11 @@ class BaseMixedInt8Test(unittest.TestCase):
     input_text = "Hello my name is"
     EXPECTED_OUTPUTS = set()
     EXPECTED_OUTPUTS.add("Hello my name is John.\nI am a friend of the family.\n")
+    # Expected values on a A10
+    EXPECTED_OUTPUTS.add("Hello my name is John.\nI am a friend of your father.\n")
     MAX_NEW_TOKENS = 10
+    # Expected values with offload
+    EXPECTED_OUTPUTS.add("Hello my name is John and I am a professional photographer based in")
 
     def setUp(self):
         # Models and tokenizer
@@ -278,6 +282,23 @@ class MixedInt8Test(BaseMixedInt8Test):
         output_sequences = model_8bit_from_config.generate(
             input_ids=encoded_input["input_ids"].to(0), max_new_tokens=10
         )
+
+        self.assertIn(self.tokenizer.decode(output_sequences[0], skip_special_tokens=True), self.EXPECTED_OUTPUTS)
+
+    def test_generate_quality_dequantize(self):
+        r"""
+        Test that loading the model and dequantizing it produce correct results
+        """
+        bnb_config = BitsAndBytesConfig(load_in_8bit=True)
+
+        model_8bit = AutoModelForCausalLM.from_pretrained(
+            self.model_name, quantization_config=bnb_config, device_map="auto"
+        )
+
+        model_8bit.dequantize()
+
+        encoded_input = self.tokenizer(self.input_text, return_tensors="pt")
+        output_sequences = model_8bit.generate(input_ids=encoded_input["input_ids"].to(0), max_new_tokens=10)
 
         self.assertIn(self.tokenizer.decode(output_sequences[0], skip_special_tokens=True), self.EXPECTED_OUTPUTS)
 
@@ -847,6 +868,8 @@ class MixedInt8GPT2Test(MixedInt8Test):
     EXPECTED_OUTPUTS = set()
     EXPECTED_OUTPUTS.add("Hello my name is John Doe, and I'm a big fan of")
     EXPECTED_OUTPUTS.add("Hello my name is John Doe, and I'm a fan of the")
+    # Expected values on a A10
+    EXPECTED_OUTPUTS.add("Hello my name is John Doe, and I am a member of the")
 
     def test_int8_from_pretrained(self):
         r"""

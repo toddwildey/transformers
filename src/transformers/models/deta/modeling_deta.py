@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" PyTorch DETA model."""
-
+"""PyTorch DETA model."""
 
 import copy
 import math
@@ -50,9 +49,14 @@ from .configuration_deta import DetaConfig
 
 logger = logging.get_logger(__name__)
 
+MultiScaleDeformableAttention = None
 
+
+# Copied from models.deformable_detr.load_cuda_kernels
 def load_cuda_kernels():
     from torch.utils.cpp_extension import load
+
+    global MultiScaleDeformableAttention
 
     root = Path(__file__).resolve().parent.parent.parent / "kernels" / "deta"
     src_files = [
@@ -77,22 +81,6 @@ def load_cuda_kernels():
             "-D__CUDA_NO_HALF2_OPERATORS__",
         ],
     )
-
-    import MultiScaleDeformableAttention as MSDA
-
-    return MSDA
-
-
-# Move this to not compile only when importing, this needs to happen later, like in __init__.
-if is_torch_cuda_available() and is_ninja_available():
-    logger.info("Loading custom CUDA kernels...")
-    try:
-        MultiScaleDeformableAttention = load_cuda_kernels()
-    except Exception as e:
-        logger.warning(f"Could not load the custom kernel for multi-scale deformable attention: {e}")
-        MultiScaleDeformableAttention = None
-else:
-    MultiScaleDeformableAttention = None
 
 
 # Copied from transformers.models.deformable_detr.modeling_deformable_detr.MultiScaleDeformableAttentionFunction
@@ -161,11 +149,6 @@ logger = logging.get_logger(__name__)
 
 _CONFIG_FOR_DOC = "DetaConfig"
 _CHECKPOINT_FOR_DOC = "jozhang97/deta-swin-large-o365"
-
-DETA_PRETRAINED_MODEL_ARCHIVE_LIST = [
-    "jozhang97/deta-swin-large-o365",
-    # See all DETA models at https://huggingface.co/models?filter=deta
-]
 
 
 @dataclass
@@ -596,6 +579,14 @@ class DetaMultiscaleDeformableAttention(nn.Module):
 
     def __init__(self, config: DetaConfig, num_heads: int, n_points: int):
         super().__init__()
+
+        kernel_loaded = MultiScaleDeformableAttention is not None
+        if is_torch_cuda_available() and is_ninja_available() and not kernel_loaded:
+            try:
+                load_cuda_kernels()
+            except Exception as e:
+                logger.warning(f"Could not load the custom kernel for multi-scale deformable attention: {e}")
+
         if config.d_model % num_heads != 0:
             raise ValueError(
                 f"embed_dim (d_model) must be divisible by num_heads, but got {config.d_model} and {num_heads}"
@@ -687,13 +678,14 @@ class DetaMultiscaleDeformableAttention(nn.Module):
             batch_size, num_queries, self.n_heads, self.n_levels, self.n_points
         )
         # batch_size, num_queries, n_heads, n_levels, n_points, 2
-        if reference_points.shape[-1] == 2:
+        num_coordinates = reference_points.shape[-1]
+        if num_coordinates == 2:
             offset_normalizer = torch.stack([spatial_shapes[..., 1], spatial_shapes[..., 0]], -1)
             sampling_locations = (
                 reference_points[:, :, None, :, None, :]
                 + sampling_offsets / offset_normalizer[None, None, None, :, None, :]
             )
-        elif reference_points.shape[-1] == 4:
+        elif num_coordinates == 4:
             sampling_locations = (
                 reference_points[:, :, None, :, None, :2]
                 + sampling_offsets / self.n_points * reference_points[:, :, None, :, None, 2:] * 0.5
@@ -1037,25 +1029,6 @@ class DetaDecoderLayer(nn.Module):
             outputs += (self_attn_weights, cross_attn_weights)
 
         return outputs
-
-
-# Copied from transformers.models.detr.modeling_detr.DetrClassificationHead
-class DetaClassificationHead(nn.Module):
-    """Head for sentence-level classification tasks."""
-
-    def __init__(self, input_dim: int, inner_dim: int, num_classes: int, pooler_dropout: float):
-        super().__init__()
-        self.dense = nn.Linear(input_dim, inner_dim)
-        self.dropout = nn.Dropout(p=pooler_dropout)
-        self.out_proj = nn.Linear(inner_dim, num_classes)
-
-    def forward(self, hidden_states: torch.Tensor):
-        hidden_states = self.dropout(hidden_states)
-        hidden_states = self.dense(hidden_states)
-        hidden_states = torch.tanh(hidden_states)
-        hidden_states = self.dropout(hidden_states)
-        hidden_states = self.out_proj(hidden_states)
-        return hidden_states
 
 
 class DetaPreTrainedModel(PreTrainedModel):
@@ -1892,7 +1865,7 @@ class DetaModel(DetaPreTrainedModel):
 )
 class DetaForObjectDetection(DetaPreTrainedModel):
     # When using clones, all layers > 0 will be clones, but layer 0 *is* required
-    _tied_weights_keys = [r"bbox_embed\.\d+"]
+    _tied_weights_keys = [r"bbox_embed\.\d+", r"class_embed\.\d+"]
     # We can't initialize the model on meta device as some weights are modified during the initialization
     _no_split_modules = None
 
@@ -1999,10 +1972,11 @@ class DetaForObjectDetection(DetaPreTrainedModel):
         ...         f"Detected {model.config.id2label[label.item()]} with confidence "
         ...         f"{round(score.item(), 3)} at location {box}"
         ...     )
-        Detected cat with confidence 0.683 at location [345.85, 23.68, 639.86, 372.83]
-        Detected cat with confidence 0.683 at location [8.8, 52.49, 316.93, 473.45]
-        Detected remote with confidence 0.568 at location [40.02, 73.75, 175.96, 117.33]
-        Detected remote with confidence 0.546 at location [333.68, 77.13, 370.12, 187.51]
+        Detected cat with confidence 0.802 at location [9.87, 54.36, 316.93, 473.44]
+        Detected cat with confidence 0.795 at location [346.62, 24.35, 639.62, 373.2]
+        Detected remote with confidence 0.725 at location [40.41, 73.36, 175.77, 117.29]
+        Detected remote with confidence 0.638 at location [333.34, 76.81, 370.22, 187.94]
+        Detected couch with confidence 0.584 at location [0.03, 0.99, 640.02, 474.93]
         ```"""
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
@@ -2348,9 +2322,10 @@ class DetaLoss(nn.Module):
         num_boxes = torch.as_tensor([num_boxes], dtype=torch.float, device=next(iter(outputs.values())).device)
         # Check that we have initialized the distributed state
         world_size = 1
-        if PartialState._shared_state != {}:
-            num_boxes = reduce(num_boxes)
-            world_size = PartialState().num_processes
+        if is_accelerate_available():
+            if PartialState._shared_state != {}:
+                num_boxes = reduce(num_boxes)
+                world_size = PartialState().num_processes
         num_boxes = torch.clamp(num_boxes / world_size, min=1).item()
 
         # Compute all the requested losses
